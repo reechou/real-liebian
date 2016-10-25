@@ -28,6 +28,7 @@ type ControllerLogic struct {
 
 	qrCodeUrlMap    map[int64]*QRCodeUrl
 	qrCodeUpateTime int64
+	qrCodeUrlIdx    int
 
 	stop chan struct{}
 	done chan struct{}
@@ -138,7 +139,7 @@ func (cl *ControllerLogic) GetQRCodeUrl() (*QRCodeUrl, error) {
 	if len(cl.qrCodeUrlMap) == 0 {
 		return nil, fmt.Errorf("cannot find useful qrcode url.")
 	}
-	// plog.Debugf("get qrcode url: all code: %d.\n", len(cl.qrCodeUrlMap))
+	plog.Debugf("get qrcode url: all code: %v.\n", cl.qrCodeUrlMap)
 	// rand.Seed(time.Now().Unix())
 	// qIdx := rand.Intn(len(cl.qrCodeUrlMap))
 	// addIdx := 0
@@ -146,6 +147,8 @@ func (cl *ControllerLogic) GetQRCodeUrl() (*QRCodeUrl, error) {
 	// 	qIdx = 0
 	// }
 
+	cl.Lock()
+	defer cl.Unlock()
 	now := time.Now().Unix()
 	for _, v := range cl.qrCodeUrlMap {
 		plog.Debugf("v(%v) now(%d) CreateTime(%d)", v, now, v.CreateTime)
