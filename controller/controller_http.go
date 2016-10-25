@@ -39,6 +39,7 @@ func (xhs *XHttpServer) registerHandlers() {
 
 	xhs.hs.Route("/liebian/add_qrcode_url", xhs.httpWrap(xhs.addQRCodeUrl))
 	xhs.hs.Route("/liebian/get_qrcode_url", xhs.httpWrap(xhs.getQRCodeUrl))
+	xhs.hs.Route("/liebian/update_qrcode_url", xhs.httpWrap(xhs.updateQRCodeUrl))
 }
 
 func (xhs *XHttpServer) httpWrap(handler HttpHandler) func(rsp http.ResponseWriter, req *http.Request) {

@@ -130,9 +130,11 @@ func (cl *ControllerLogic) onRefresh() {
 		}
 		cl.qrCodeUrlMap[v.ID] = &v
 	}
+	plog.Infof("on refresh get qrcode url success.\n")
 }
 
 func (cl *ControllerLogic) GetQRCodeUrl() (*QRCodeUrl, error) {
+	plog.Debugf("get qrcode url: all code: %d.\n", len(cl.qrCodeUrlMap))
 	now := time.Now().Unix()
 	for _, v := range cl.qrCodeUrlMap {
 		if now-v.CreateTime >= cl.cfg.QRCodeExpired {

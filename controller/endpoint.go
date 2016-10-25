@@ -37,3 +37,22 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 
 	return response, nil
 }
+
+func (xhs *XHttpServer) updateQRCodeUrl(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	var info QRCodeUrl
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+
+	err := xhs.logic.cdb.UpdateQRCodeStatus(&info)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("update qrcode url status failed: %v", err)
+		return response, nil
+	}
+
+	return response, nil
+}

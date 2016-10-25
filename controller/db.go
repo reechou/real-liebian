@@ -75,7 +75,12 @@ func (cdb *ControllerDB) GetQRCodeUrlList(startTime int64) (*QRCodeUrlList, erro
 }
 
 func (cdb *ControllerDB) UpdateQRCodeStatus(info *QRCodeUrl) error {
-	_, err := cdb.db.Exec("update qrcode_url set status=? where id=?", info.Status, info.ID)
+	var err error
+	if info.ID != 0 {
+		_, err = cdb.db.Exec("update qrcode_url set status=? where id=?", info.Status, info.ID)
+	} else if info.Url != "" {
+		_, err = cdb.db.Exec("update qrcode_url set status=? where url=?", info.Status, info.Url)
+	}
 	if err != nil {
 		return err
 	}
