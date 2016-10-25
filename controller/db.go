@@ -62,7 +62,7 @@ func (cdb *ControllerDB) GetQRCodeUrlList(startTime int64) (*QRCodeUrlList, erro
 		if list.UpdateTime < uTime {
 			list.UpdateTime = uTime
 		}
-		info := QRCodeUrl{
+		info := &QRCodeUrl{
 			ID:         id,
 			Name:       v["name"],
 			Url:        v["url"],

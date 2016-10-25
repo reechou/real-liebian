@@ -14,7 +14,7 @@ type QRCodeUrl struct {
 }
 
 type QRCodeUrlList struct {
-	List       []QRCodeUrl
+	List       []*QRCodeUrl
 	UpdateTime int64
 }
 

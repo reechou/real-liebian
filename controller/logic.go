@@ -87,7 +87,7 @@ func (cl *ControllerLogic) Init() error {
 		if now-v.CreateTime >= cl.cfg.QRCodeExpired {
 			continue
 		}
-		cl.qrCodeUrlMap[v.ID] = &v
+		cl.qrCodeUrlMap[v.ID] = v
 	}
 
 	return nil
@@ -130,7 +130,7 @@ func (cl *ControllerLogic) onRefresh() {
 		if v.Status != QRCODE_STATUS_OK || now-v.CreateTime >= cl.cfg.QRCodeExpired {
 			continue
 		}
-		cl.qrCodeUrlMap[v.ID] = &v
+		cl.qrCodeUrlMap[v.ID] = v
 	}
 	plog.Infof("on refresh get qrcode url success.\n")
 }
