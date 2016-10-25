@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	// "math/rand"
 	"sync"
 	"time"
 
@@ -134,9 +135,20 @@ func (cl *ControllerLogic) onRefresh() {
 }
 
 func (cl *ControllerLogic) GetQRCodeUrl() (*QRCodeUrl, error) {
-	plog.Debugf("get qrcode url: all code: %d.\n", len(cl.qrCodeUrlMap))
+	if len(cl.qrCodeUrlMap) == 0 {
+		return nil, fmt.Errorf("cannot find useful qrcode url.")
+	}
+	// plog.Debugf("get qrcode url: all code: %d.\n", len(cl.qrCodeUrlMap))
+	// rand.Seed(time.Now().Unix())
+	// qIdx := rand.Intn(len(cl.qrCodeUrlMap))
+	// addIdx := 0
+	// if qIdx >= len(cl.qrCodeUrlMap) {
+	// 	qIdx = 0
+	// }
+
 	now := time.Now().Unix()
 	for _, v := range cl.qrCodeUrlMap {
+		plog.Debugf("v(%v) now(%d) CreateTime(%d)", v, now, v.CreateTime)
 		if now-v.CreateTime >= cl.cfg.QRCodeExpired {
 			continue
 		}
