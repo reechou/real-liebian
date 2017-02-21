@@ -1,30 +1,36 @@
 package controller
 
-const (
-	QRCODE_STATUS_OK = iota
-	QRCODE_STATUS_OFFLINE
+import (
+	"fmt"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-xorm/core"
+	"github.com/go-xorm/xorm"
+	"github.com/reechou/real-liebian/config"
 )
 
-type QRCodeUrl struct {
-	ID         int64  `json:"id"`
-	Name       string `json:"name"`
-	Url        string `json:"url"`
-	Status     int64  `json:"-"`
-	CreateTime int64  `json:"-"`
-}
+var x *xorm.Engine
 
-type QRCodeUrlList struct {
-	List       []*QRCodeUrl
-	UpdateTime int64
-}
+func InitDB(cfg *config.Config) {
+	var err error
+	x, err = xorm.NewEngine("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
+		cfg.MysqlInfo.User,
+		cfg.MysqlInfo.Pass,
+		cfg.MysqlInfo.Host,
+		cfg.MysqlInfo.DBName))
+	if err != nil {
+		plog.Fatalf("Fail to init new engine: %v", err)
+	}
+	//x.SetLogger(nil)
+	x.SetMapper(core.GonicMapper{})
+	x.TZLocation, _ = time.LoadLocation("Asia/Shanghai")
+	// if need show raw sql in log
+	x.ShowSQL(true)
 
-const (
-	RES_OK = iota
-	RES_ERR
-)
-
-type Response struct {
-	Code int         `json:"code"`
-	Msg  string      `json:"msg,omitempty"`
-	Data interface{} `json:"data,omitempty"`
+	// sync tables
+	if err = x.Sync2(new(QRCodeUrlInfo),
+		new(UserQRCodeUrl)); err != nil {
+		plog.Fatalf("Fail to sync database: %v", err)
+	}
 }
