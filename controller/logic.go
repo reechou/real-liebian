@@ -18,6 +18,7 @@ type ControllerLogic struct {
 	aliyunOss *config.AliyunOss
 	//cdb       *ControllerDB
 	xServer   *XHttpServer
+	rul *RobotUserLogic
 
 	qrCodeUpateTime int64
 	qrCodeUrlIdx    int
@@ -50,7 +51,8 @@ func NewControllerLogic(cfg *config.Config) *ControllerLogic {
 	//go cl.run()
 
 	InitDB(cfg)
-	cl.xServer = NewXHttpServer(cfg.ListenAddr, cfg.ListenPort, cl)
+	cl.rul = NewRobotUserLogic()
+	cl.xServer = NewXHttpServer(cfg.ListenAddr, cfg.ListenPort, cl, cl.rul)
 	setupLogging(cfg)
 
 	return cl

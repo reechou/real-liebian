@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
-// type: 0-群二维码 1-达人二维码 2-普通用户二维码
+// type: 渠道号 0-REAL群二维码 1-达人二维码 2-普通用户二维码
 type QRCodeUrlInfo struct {
 	ID        int64  `xorm:"pk autoincr" json:"id"`
-	Name      string `xorm:"not null default '' varchar(128)" json:"name"`
+	Name      string `xorm:"not null default '' varchar(128) index" json:"name"`
 	Url       string `xorm:"not null default '' varchar(256)" json:"url"`
 	Type      int64  `xorm:"not null default 0 int index" json:"type"`
+	UserName  string `xorm:"not null default '' varchar(128)" json:"userName"`
+	IfMod     int64  `xorm:"not null default 0 int" json:"ifMod"`
 	Status    int64  `xorm:"not null default 0 int index" json:"status"`
 	CreatedAt int64  `xorm:"not null default 0 int index" json:"createdAt"`
 }
@@ -34,6 +36,51 @@ func CreateQRCodeUrlInfo(info *QRCodeUrlInfo) error {
 	return nil
 }
 
+func CreateQRCodeUrlInfoList(list []QRCodeUrlInfo) error {
+	if len(list) == 0 {
+		return nil
+	}
+	
+	_, err := x.Insert(&list)
+	if err != nil {
+		plog.Errorf("create qrcode url info list error: %v", err)
+		return err
+	}
+	
+	return nil
+}
+
+func GetAllQRCodeUrlInfoFromTypeCount(t int64) (int64, error) {
+	count, err := x.Where("type = ?", t).Count(&QRCodeUrlInfo{})
+	if err != nil {
+		plog.Errorf("get all qrcode url info from type count error: %v", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+func GetAllQRCodeUrlInfoFromType(t, offset, num int64) ([]QRCodeUrlInfo, error) {
+	var list []QRCodeUrlInfo
+	err := x.Where("type = ?", t).Limit(int(num), int(offset)).Find(&list)
+	if err != nil {
+		plog.Errorf("get all qrcode url info from type list error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func GetQRCodeUrlInfo(info *QRCodeUrlInfo) (bool, error) {
+	has, err := x.Where("name = ?", info.Name).Get(info)
+	if err != nil {
+		return false, err
+	}
+	if !has {
+		plog.Debugf("cannot find qrcode url info from info[%v]", info)
+		return false, nil
+	}
+	return true, nil
+}
+
 func GetQRCodeUrlInfoListCount(t int64) (int64, error) {
 	count, err := x.Where("type = ?", t).Count(&QRCodeUrlInfo{})
 	if err != nil {
@@ -41,6 +88,16 @@ func GetQRCodeUrlInfoListCount(t int64) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func GetQRCodeUrlInfoList(num, t int64) ([]QRCodeUrlInfo, error) {
+	createdTime := time.Now().Unix() - 518400
+	var list []QRCodeUrlInfo
+	err := x.Where("type = ?", t).And("status = 0").And("created_at > ?", createdTime).Limit(int(num)).Find(&list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }
 
 func GetQRCodeUrlInfoOfRandom(count, t int64) (*QRCodeUrlInfo, error) {
@@ -61,5 +118,10 @@ func GetQRCodeUrlInfoOfRandom(count, t int64) (*QRCodeUrlInfo, error) {
 
 func UpdateQRCodeUrlInfoStatus(info *QRCodeUrlInfo) error {
 	_, err := x.ID(info.ID).Cols("status").Update(info)
+	return err
+}
+
+func UpdateQRCodeUrlInfoIfMod(info *QRCodeUrlInfo) error {
+	_, err := x.ID(info.ID).Cols("if_mod").Update(info)
 	return err
 }

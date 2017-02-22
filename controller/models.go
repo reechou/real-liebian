@@ -26,11 +26,13 @@ func InitDB(cfg *config.Config) {
 	x.SetMapper(core.GonicMapper{})
 	x.TZLocation, _ = time.LoadLocation("Asia/Shanghai")
 	// if need show raw sql in log
-	x.ShowSQL(true)
+	//x.ShowSQL(true)
 
 	// sync tables
 	if err = x.Sync2(new(QRCodeUrlInfo),
-		new(UserQRCodeUrl)); err != nil {
+		new(UserQRCodeUrl),
+		new(TypeGroupSetting),
+		new(TypeRobotMsgSetting)); err != nil {
 		plog.Fatalf("Fail to sync database: %v", err)
 	}
 }

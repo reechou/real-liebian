@@ -27,6 +27,10 @@ type IPFilterConfig struct {
 	FilterLocation []string
 }
 
+type WxRobotExt struct {
+	Host string
+}
+
 type Config struct {
 	ConfigPath string
 
@@ -35,9 +39,11 @@ type Config struct {
 	ListenAddr    string
 	ListenPort    int
 	QRCodeExpired int64
+	GroupMaxNum   int
 
 	utils.MysqlInfo
 	AliyunOss
+	WxRobotExt
 }
 
 func NewConfig() *Config {

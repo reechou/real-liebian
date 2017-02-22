@@ -5,18 +5,23 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"sync"
 
 	"github.com/mitchellh/mapstructure"
 )
 
 type XHttpServer struct {
+	sync.Mutex
 	logic *ControllerLogic
 	hs    *HttpSrv
+	rul   *RobotUserLogic
+	acMap map[int64]*AutoCheckGroup
+	rbExt *RobotExt
 }
 
 type HttpHandler func(rsp http.ResponseWriter, req *http.Request) (interface{}, error)
 
-func NewXHttpServer(addr string, port int, logic *ControllerLogic) *XHttpServer {
+func NewXHttpServer(addr string, port int, logic *ControllerLogic, rul *RobotUserLogic) *XHttpServer {
 	xhs := &XHttpServer{
 		hs: &HttpSrv{
 			HttpAddr: addr,
@@ -24,7 +29,11 @@ func NewXHttpServer(addr string, port int, logic *ControllerLogic) *XHttpServer 
 			Routers:  make(map[string]http.HandlerFunc),
 		},
 		logic: logic,
+		rul: rul,
+		acMap: make(map[int64]*AutoCheckGroup),
+		rbExt: NewRobotExt(logic.cfg),
 	}
+	xhs.initAutoCheckGroupList()
 	xhs.registerHandlers()
 
 	return xhs
@@ -38,8 +47,32 @@ func (xhs *XHttpServer) registerHandlers() {
 	xhs.hs.Route("/", xhs.Index)
 
 	xhs.hs.Route("/liebian/add_qrcode_url", xhs.httpWrap(xhs.addQRCodeUrl))
+	xhs.hs.Route("/liebian/add_qrcode_url_list", xhs.httpWrap(xhs.addQRCodeUrlList))
 	xhs.hs.Route("/liebian/get_qrcode_url", xhs.httpWrap(xhs.getQRCodeUrl))
+	xhs.hs.Route("/liebian/get_all_qrcode_url", xhs.httpWrap(xhs.getAllQRCodeUrlInfoList))
+	xhs.hs.Route("/liebian/get_active_qrcode_url", xhs.httpWrap(xhs.getActiveQRCodeUrlInfoList))
 	xhs.hs.Route("/liebian/expired_qrcode_url", xhs.httpWrap(xhs.expiredQRCodeUrl))
+	xhs.hs.Route("/liebian/create_group_setting", xhs.httpWrap(xhs.createGroupSetting))
+	xhs.hs.Route("/liebian/create_robot_msg_setting", xhs.httpWrap(xhs.createRobotMsgSetting))
+	xhs.hs.Route("/liebian/del_robot_msg_setting", xhs.httpWrap(xhs.delRobotMsgSetting))
+	
+	xhs.hs.Route("/robot/receive_msg", xhs.httpWrap(xhs.RobotReceiveMsg))
+}
+
+func (xhs *XHttpServer) initAutoCheckGroupList() {
+	list, err := GetTypeRobotMsgSettingList()
+	if err != nil {
+		plog.Errorf("get group check group list error: %v", err)
+		return
+	}
+	xhs.Lock()
+	for _, v := range list {
+		plog.Infof("get robot msg setting: %v", v)
+		acg := NewAutoCheckGroup(v, xhs.rbExt, xhs.rul)
+		go acg.Run()
+		xhs.acMap[v.ID] = acg
+	}
+	xhs.Unlock()
 }
 
 func (xhs *XHttpServer) httpWrap(handler HttpHandler) func(rsp http.ResponseWriter, req *http.Request) {
