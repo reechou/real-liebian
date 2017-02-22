@@ -122,6 +122,7 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 	resResult := &GetQRCodeUrlRsp{}
 	if has {
 		resResult.Status = GET_URL_STATUS_HAS_EXIST
+		resResult.Result = &QRCodeUrlInfo{Url: userQRCode.Url}
 		response.Data = resResult
 		return response, nil
 	}
