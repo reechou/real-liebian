@@ -101,7 +101,7 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 			Msg:        v.Msg,
 		})
 		self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
-		time.Sleep(time.Second)
+		time.Sleep(3*time.Second)
 	}
 }
 
