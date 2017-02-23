@@ -41,6 +41,11 @@ func CreateQRCodeUrlInfoList(list []QRCodeUrlInfo) error {
 		return nil
 	}
 	
+	now := time.Now().Unix()
+	for _, v := range list {
+		v.CreatedAt = now
+	}
+	
 	_, err := x.Insert(&list)
 	if err != nil {
 		plog.Errorf("create qrcode url info list error: %v", err)
