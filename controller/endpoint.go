@@ -266,6 +266,10 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 		return response, nil
 	}
 	if ok {
+		if qrCodeInfo.RobotWx != info.BaseInfo.WechatNick {
+			qrCodeInfo.RobotWx = info.BaseInfo.WechatNick
+			UpdateQRCodeUrlInfoRobotWx(qrCodeInfo)
+		}
 		xhs.handleRobotMsg(qrCodeInfo, &info)
 	}
 

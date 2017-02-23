@@ -15,17 +15,15 @@ const (
 
 var (
 	RANDOM_MSG_ADD = []string{
-		"!",
-		"!!",
-		"!!!",
-		"！",
-		"！！",
-		"！！！",
-		"[机智]",
-		"[机智][机智]",
-		"↓",
-		"↓↓",
-		"↓↓↓",
+		".", "..", "...",
+		"★", "✔", "↧",
+		"↩", "⇤", "⇜",
+		"↞", "↜", "┄",
+		"-", "--", "^", "^_^",
+		"!", "!!", "!!!",
+		"！", "！！", "！！！",
+		"[机智]", "[机智][机智]",
+		"↓", "↓↓", "↓↓↓",
 	}
 )
 
@@ -108,6 +106,10 @@ func (self *AutoCheckGroup) check() {
 }
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
+	robot := info.RobotWx
+	if robot == "" {
+		robot = self.setting.Robot
+	}
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
 			rand.Seed(time.Now().UnixNano())
@@ -116,7 +118,7 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 		}
 		var sendReq SendMsgInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
-			WechatNick: self.setting.Robot,
+			WechatNick: robot,
 			ChatType:   CHAT_TYPE_GROUP,
 			NickName:   info.Name,
 			MsgType:    v.MsgType,
@@ -128,6 +130,10 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 }
 
 func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo) {
+	robot := info.RobotWx
+	if robot == "" {
+		robot = self.setting.Robot
+	}
 	var sendReq SendMsgInfo
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
@@ -136,7 +142,7 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
 		}
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
-			WechatNick: self.setting.Robot,
+			WechatNick: robot,
 			ChatType:   CHAT_TYPE_GROUP,
 			NickName:   info.Name,
 			MsgType:    v.MsgType,

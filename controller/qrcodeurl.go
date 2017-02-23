@@ -14,6 +14,7 @@ type QRCodeUrlInfo struct {
 	Type      int64  `xorm:"not null default 0 int index" json:"type"`
 	UserName  string `xorm:"not null default '' varchar(128)" json:"userName"`
 	IfMod     int64  `xorm:"not null default 0 int" json:"ifMod"`
+	RobotWx   string `xorm:"not null default '' varchar(128)" json:"robotWx"`
 	Status    int64  `xorm:"not null default 0 int index" json:"status"`
 	CreatedAt int64  `xorm:"not null default 0 int index" json:"createdAt"`
 }
@@ -128,5 +129,10 @@ func UpdateQRCodeUrlInfoStatus(info *QRCodeUrlInfo) error {
 
 func UpdateQRCodeUrlInfoIfMod(info *QRCodeUrlInfo) error {
 	_, err := x.ID(info.ID).Cols("if_mod").Update(info)
+	return err
+}
+
+func UpdateQRCodeUrlInfoRobotWx(info *QRCodeUrlInfo) error {
+	_, err := x.ID(info.ID).Cols("robot_wx").Update(info)
 	return err
 }
