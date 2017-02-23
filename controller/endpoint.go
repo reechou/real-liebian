@@ -110,7 +110,7 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 	userQRCode := &UserQRCodeUrl{
 		AppId:  info.AppId,
 		OpenId: info.OpenId,
-		Type:   info.T,
+		Type:   info.Type,
 	}
 	has, err := GetUserQRCodeUrl(userQRCode)
 	if err != nil {
@@ -127,7 +127,7 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 		return response, nil
 	}
 
-	list, err := GetQRCodeUrlListFromType(info.T)
+	list, err := GetQRCodeUrlListFromType(info.Type)
 	if err != nil {
 		plog.Errorf("get qrcode list from type error: %v", err)
 		response.Code = RES_ERR
