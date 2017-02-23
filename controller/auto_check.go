@@ -4,12 +4,29 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+	"math/rand"
 )
 
 const (
 	SETTING_TYPE_GROUP_ADD = iota   // 群成员增加
 	SETTING_TYPE_GROUP_USER_MSG_IMG // 群成员发送图片
 	SETTING_TYPE_GROUP_OTHER        // 其他
+)
+
+var (
+	RANDOM_MSG_ADD = []string{
+		"!",
+		"!!",
+		"!!!",
+		"！",
+		"！！",
+		"！！！",
+		"[机智]",
+		"[机智][机智]",
+		"↓",
+		"↓↓",
+		"↓↓↓",
+	}
 )
 
 type AutoCheckGroup struct {
@@ -92,6 +109,11 @@ func (self *AutoCheckGroup) check() {
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 	for _, v := range self.msgs {
+		if v.MsgType == MSG_TYPE_TEXT {
+			rand.Seed(time.Now().UnixNano())
+			offset := rand.Intn(len(RANDOM_MSG_ADD))
+			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
+		}
 		var sendReq SendMsgInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: self.setting.Robot,
