@@ -69,9 +69,9 @@ func (self *AutoCheckGroup) check() {
 	case SETTING_TYPE_GROUP_ADD:
 		for _, v := range activeList {
 			if v.IfMod != 0 {
-				self.sendMsgs(&v)
 				v.IfMod = 0
 				UpdateQRCodeUrlInfoIfMod(&v)
+				self.sendMsgs(&v)
 			}
 		}
 	case SETTING_TYPE_GROUP_USER_MSG_IMG:
@@ -101,7 +101,7 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 			Msg:        v.Msg,
 		})
 		self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
-		time.Sleep(3*time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 
