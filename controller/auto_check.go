@@ -130,6 +130,11 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo) {
 	var sendReq SendMsgInfo
 	for _, v := range self.msgs {
+		if v.MsgType == MSG_TYPE_TEXT {
+			rand.Seed(time.Now().UnixNano())
+			offset := rand.Intn(len(RANDOM_MSG_ADD))
+			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
+		}
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: self.setting.Robot,
 			ChatType:   CHAT_TYPE_GROUP,
