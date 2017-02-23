@@ -8,7 +8,7 @@ const (
 type GetQRCodeUrlReq struct {
 	AppId  string `json:"appId,omitempty"`
 	OpenId string `json:"openId,omitempty"`
-	T      int64  `json:"type"`
+	Type   int64  `json:"type"`
 }
 
 type CreateRobotMsgSettingReq struct {
