@@ -56,7 +56,7 @@ func CreateQRCodeUrlInfoList(list []QRCodeUrlInfo) error {
 }
 
 func GetAllQRCodeUrlInfoFromTypeCount(t int64) (int64, error) {
-	count, err := x.Where("type = ?", t).Count(&QRCodeUrlInfo{})
+	count, err := x.Where("type = ?", t).And("status = 0").Count(&QRCodeUrlInfo{})
 	if err != nil {
 		plog.Errorf("get all qrcode url info from type count error: %v", err)
 		return 0, err
@@ -66,7 +66,7 @@ func GetAllQRCodeUrlInfoFromTypeCount(t int64) (int64, error) {
 
 func GetAllQRCodeUrlInfoFromType(t, offset, num int64) ([]QRCodeUrlInfo, error) {
 	var list []QRCodeUrlInfo
-	err := x.Where("type = ?", t).Limit(int(num), int(offset)).Find(&list)
+	err := x.Where("type = ?", t).And("status = 0").Limit(int(num), int(offset)).Find(&list)
 	if err != nil {
 		plog.Errorf("get all qrcode url info from type list error: %v", err)
 		return nil, err
