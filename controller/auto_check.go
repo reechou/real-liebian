@@ -91,8 +91,8 @@ func (self *AutoCheckGroup) check() {
 }
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
-	var sendReq SendMsgInfo
 	for _, v := range self.msgs {
+		var sendReq SendMsgInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: self.setting.Robot,
 			ChatType:   CHAT_TYPE_GROUP,
@@ -100,8 +100,9 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 			MsgType:    v.MsgType,
 			Msg:        v.Msg,
 		})
+		self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
+		time.Sleep(time.Second)
 	}
-	self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
 }
 
 func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo) {
