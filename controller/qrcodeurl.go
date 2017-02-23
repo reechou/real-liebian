@@ -42,8 +42,8 @@ func CreateQRCodeUrlInfoList(list []QRCodeUrlInfo) error {
 	}
 	
 	now := time.Now().Unix()
-	for _, v := range list {
-		v.CreatedAt = now
+	for i := 0; i < len(list); i++ {
+		list[i].CreatedAt = now
 	}
 	
 	_, err := x.Insert(&list)
