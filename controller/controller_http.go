@@ -55,6 +55,7 @@ func (xhs *XHttpServer) registerHandlers() {
 	xhs.hs.Route("/liebian/create_group_setting", xhs.httpWrap(xhs.createGroupSetting))
 	xhs.hs.Route("/liebian/create_robot_msg_setting", xhs.httpWrap(xhs.createRobotMsgSetting))
 	xhs.hs.Route("/liebian/del_robot_msg_setting", xhs.httpWrap(xhs.delRobotMsgSetting))
+	xhs.hs.Route("/liebian/refresh_robot_msg_setting", xhs.httpWrap(xhs.refreshRobotMsgSetting))
 	
 	xhs.hs.Route("/robot/receive_msg", xhs.httpWrap(xhs.RobotReceiveMsg))
 }

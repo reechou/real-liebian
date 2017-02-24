@@ -2,6 +2,7 @@ package controller
 
 import (
 	"sync"
+	"strings"
 )
 
 type RobotUserLogic struct {
@@ -29,6 +30,8 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 	defer self.Unlock()
 	
 	userList := self.UserRobotImgMap[id]
+	user = strings.Replace(user, "<span class=\"emoji", " ", -1)
+	user = strings.Replace(user, "\"></span>", " ", -1)
 	self.UserRobotImgMap[id] = append(userList, user)
 	plog.Debugf("add group img user[%d]: %v", id, self.UserRobotImgMap[id])
 }

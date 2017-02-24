@@ -85,7 +85,7 @@ func DelTypeRobotMsgSetting(id int64) error {
 }
 
 func GetTypeRobotMsgSetting(info *TypeRobotMsgSetting) (bool, error) {
-	has, err := x.Where("type = ?", info.Type).Get(info)
+	has, err := x.Where("id = ?", info.ID).Get(info)
 	if err != nil {
 		return false, err
 	}

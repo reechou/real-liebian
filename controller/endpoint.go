@@ -251,6 +251,40 @@ func (xhs *XHttpServer) delRobotMsgSetting(rsp http.ResponseWriter, req *http.Re
 	return response, nil
 }
 
+func (xhs *XHttpServer) refreshRobotMsgSetting(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	var info RefreshRobotMsgSettingReq
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+	
+	acg, ok := xhs.acMap[info.Id]
+	if !ok {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("cannot found auto check group id[%d]", info.Id)
+		return response, nil
+	}
+	setting := &TypeRobotMsgSetting{
+		ID: info.Id,
+	}
+	has, err := GetTypeRobotMsgSetting(setting)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("get acg from id[%d] error: %v", info.Id, err)
+		return response, nil
+	}
+	if !has {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("cannot found auto check group id[%d]", info.Id)
+		return response, nil
+	}
+	acg.Refresh(setting)
+	
+	return response, nil
+}
+
 func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
 	response := &Response{Code: RES_OK}
 	var info ReceiveMsgInfo

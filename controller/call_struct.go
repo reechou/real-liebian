@@ -38,6 +38,10 @@ type GetAllQRCodeRsp struct {
 	List  []QRCodeUrlInfo `json:"list"`
 }
 
+type RefreshRobotMsgSettingReq struct {
+	Id int64 `json:"id"`
+}
+
 const (
 	GET_URL_STATUS_OK = iota
 	GET_URL_STATUS_HAS_EXIST

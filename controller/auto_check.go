@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 	"math/rand"
+	"sync"
 )
 
 const (
@@ -15,19 +16,28 @@ const (
 
 var (
 	RANDOM_MSG_ADD = []string{
-		".", "..", "...",
+		".", "..", "↭",
 		"★", "✔", "↧",
 		"↩", "⇤", "⇜",
 		"↞", "↜", "┄",
 		"-", "--", "^", "^_^",
-		"!", "!!", "!!!",
-		"！", "！！", "！！！",
+		"!", "!!", "↮",
+		"！", "•", "“",
 		"[机智]", "[机智][机智]",
-		"↓", "↓↓", "↓↓↓",
+		"♥", "♥♥", "♥♥♥",
+		"─", "↕↕", "↕",
+		"☈", "✓", "☑",
+		"⊰", "⊱", "†",
+		"↓", "ˉ", "﹀",
+		"﹏", "˜", "ˆ",
+		"﹡", "≑", "≐",
+		"≍", "≎", "≏",
+		"≖", "≗", "≡",
 	}
 )
 
 type AutoCheckGroup struct {
+	sync.Mutex
 	setting  TypeRobotMsgSetting
 	msgs     []MsgInfo
 	robotExt *RobotExt
@@ -74,7 +84,30 @@ func (self *AutoCheckGroup) Run() {
 	}
 }
 
+func (self *AutoCheckGroup) Refresh(setting *TypeRobotMsgSetting) {
+	self.Lock()
+	defer self.Unlock()
+	
+	self.setting.Type = setting.Type
+	self.setting.SettingType = setting.SettingType
+	self.setting.Robot = setting.Robot
+	self.setting.Msg = setting.Msg
+	self.setting.Interval = setting.Interval
+	
+	self.msgs = make([]MsgInfo, 0)
+	err := json.Unmarshal([]byte(self.setting.Msg), &self.msgs)
+	if err != nil {
+		plog.Errorf("get setting msgs error: %v", err)
+	}
+	
+	plog.Infof("refresh auto group check setting: %v.", self.setting)
+	plog.Infof("refresh auto group check msg: %v.", self.msgs)
+}
+
 func (self *AutoCheckGroup) check() {
+	self.Lock()
+	defer self.Unlock()
+	
 	activeList, err := GetQRCodeUrlListFromType(self.setting.Type)
 	if err != nil {
 		plog.Errorf("get qrcode url list from type error: %v", err)
