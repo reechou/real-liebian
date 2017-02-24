@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"math/rand"
-	"time"
+	//"time"
 )
 
 func (xhs *XHttpServer) addQRCodeUrl(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
@@ -140,8 +140,9 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 		response.Msg = fmt.Sprintf("get qrcode list from type is nil")
 		return response, nil
 	}
-	rand.Seed(time.Now().UnixNano())
+	//rand.Seed(time.Now().UnixNano())
 	offset := rand.Intn(len(list))
+	plog.Debugf("getQRCodeUrl get qrcode offset: %d", offset)
 	resResult.Status = GET_URL_STATUS_OK
 	resResult.Result = &list[offset]
 	response.Data = resResult

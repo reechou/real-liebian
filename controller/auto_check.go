@@ -145,10 +145,14 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 	}
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
-			rand.Seed(time.Now().UnixNano())
 			offset := rand.Intn(len(RANDOM_MSG_ADD))
+			plog.Debugf("sendMsgs get random msg add offset: %d", offset)
 			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
 		}
+		//if v.MsgType == MSG_TYPE_IMG {
+		//	urls := strings.Split(v.Msg, "|||")
+		//
+		//}
 		var sendReq SendMsgInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: robot,
@@ -170,8 +174,9 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 	var sendReq SendMsgInfo
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
-			rand.Seed(time.Now().UnixNano())
+			//rand.Seed(time.Now().UnixNano())
 			offset := rand.Intn(len(RANDOM_MSG_ADD))
+			plog.Debugf("sendMsgsAddPrefix get random msg add offset: %d", offset)
 			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
 		}
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
@@ -183,4 +188,8 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 		})
 	}
 	self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
