@@ -149,10 +149,12 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 			plog.Debugf("sendMsgs get random msg add offset: %d", offset)
 			v.Msg = v.Msg + RANDOM_MSG_ADD[offset]
 		}
-		//if v.MsgType == MSG_TYPE_IMG {
-		//	urls := strings.Split(v.Msg, "|||")
-		//
-		//}
+		if v.MsgType == MSG_TYPE_IMG {
+			urls := strings.Split(v.Msg, "|||")
+			offset := rand.Intn(len(urls))
+			v.Msg = urls[offset]
+			plog.Debugf("sendMsgs get random img url offset: %d, %s", offset, v.Msg)
+		}
 		var sendReq SendMsgInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: robot,
