@@ -51,7 +51,7 @@ func NewGroupFullHandler(qrCodeInfo *QRCodeUrlInfo, robotExt *RobotExt, rul *Rob
 		done:           make(chan struct{}),
 	}
 	ok := gfh.init()
-	if ok {
+	if !ok {
 		return nil
 	}
 	go gfh.run()
@@ -91,7 +91,7 @@ func (self *GroupFullHandler) init() bool {
 }
 
 func (self *GroupFullHandler) end() {
-	plog.Debugf("qrcode[%v] end.", self.qrCodeInfo)
+	plog.Debugf("full group qrcode[%v] end.", self.qrCodeInfo)
 	self.rul.DelGroup(self.qrCodeInfo.ID)
 	self.fgm.ControlEnd(self.qrCodeInfo.ID)
 }
@@ -103,7 +103,7 @@ func (self *GroupFullHandler) run() {
 	
 	for {
 		select {
-		case <-time.After(30 * time.Second):
+		case <-time.After(15 * time.Second):
 			ok := self.check()
 			if ok {
 				plog.Debugf("qrcodeinfo[%v] group full control run end.", self.qrCodeInfo)
@@ -119,6 +119,7 @@ func (self *GroupFullHandler) run() {
 func (self *GroupFullHandler) check() bool {
 	ifEnd := true
 	timeline := time.Now().Unix() - self.startTime
+	plog.Debugf("full group[%s] check starttime[%d] timeline[%d]", self.qrCodeInfo.Name, self.startTime, timeline)
 	if timeline > ControlGroupAllTime {
 		return ifEnd
 	}

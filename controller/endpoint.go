@@ -300,6 +300,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 	plog.Debugf("receive robot msg: %v", info)
 	xhs.fgm.FilterReceiveMsg(info)
 	qrCodeInfo, ok, err := xhs.getNowActiveGroup(info.BaseInfo.FromGroupName)
+	//plog.Debugf("get receive msg qrCodeInfo: %v %v", qrCodeInfo, ok)
 	if err != nil {
 		plog.Errorf("get now active group error: %v", err)
 		return response, nil
@@ -356,11 +357,13 @@ func (xhs *XHttpServer) getNowActiveGroup(group string) (*QRCodeUrlInfo, bool, e
 	if !has {
 		return nil, false, nil
 	}
+	//plog.Debugf("active 1 %v", qrcodeUrlInfo)
 	groupList, err := GetQRCodeUrlListFromType(qrcodeUrlInfo.Type)
 	if err != nil {
 		plog.Errorf("get qrcode list from type error: %v", err)
 		return nil, false, err
 	}
+	//plog.Debugf("active 2 %v", groupList)
 	for _, v := range groupList {
 		if v.Name == qrcodeUrlInfo.Name {
 			return qrcodeUrlInfo, true, nil
