@@ -127,6 +127,14 @@ func UpdateQRCodeUrlInfoStatus(info *QRCodeUrlInfo) error {
 	return err
 }
 
+func UpdateQRCodeUrlInfoStatusFromName(info *QRCodeUrlInfo) error {
+	_, err := x.Cols("status").Update(info, &QRCodeUrlInfo{Name: info.Name})
+	if err != nil {
+		plog.Errorf("update qrcode url info from name error: %v", err)
+	}
+	return err
+}
+
 func UpdateQRCodeUrlInfoIfMod(info *QRCodeUrlInfo) error {
 	_, err := x.ID(info.ID).Cols("if_mod").Update(info)
 	return err

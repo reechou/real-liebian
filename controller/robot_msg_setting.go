@@ -9,18 +9,20 @@ type MsgInfo struct {
 	Msg     string `json:"msg"`
 }
 type TypeGroupSetting struct {
-	ID        int64 `xorm:"pk autoincr" json:"id"`
-	Type      int64 `xorm:"not null default 0 int unique" json:"type"`
-	GroupNum  int64 `xorm:"not null default 0 int" json:"groupNum"`
-	CreatedAt int64 `xorm:"not null default 0 int" json:"createdAt"`
+	ID        int64  `xorm:"pk autoincr" json:"id"`
+	Type      int64  `xorm:"not null default 0 int unique" json:"type"`
+	GroupNum  int64  `xorm:"not null default 0 int" json:"groupNum"`
+	RobotHost string `xorm:"not null default '' varchar(128)" json:"robotHost"`
+	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
 }
 type TypeRobotMsgSetting struct {
 	ID          int64  `xorm:"pk autoincr" json:"id"`
 	Type        int64  `xorm:"not null default 0 int index" json:"type"`
-	SettingType int    `xorm:"not null default 0 int" json:"settingType"`
+	SettingType int    `xorm:"not null default 0 int index" json:"settingType"`
 	Robot       string `xorm:"not null default '' varchar(128)" json:"robot"`
 	Msg         string `xorm:"not null default '' varchar(768)" json:"msg"`
 	Interval    int64  `xorm:"not null default 0 int" json:"interval"`
+	After       int64  `xorm:"not null default 0 int" json:"after"`
 	CreatedAt   int64  `xorm:"not null default 0 int" json:"createdAt"`
 }
 
@@ -52,7 +54,27 @@ func GetTypeGroupSetting(info *TypeGroupSetting) (bool, error) {
 
 func GetTypeRobotMsgSettingList() ([]TypeRobotMsgSetting, error) {
 	var list []TypeRobotMsgSetting
-	err := x.Find(&list)
+	err := x.Where("setting_type < ?", SETTING_FULL_GROUP_START).Find(&list)
+	if err != nil {
+		plog.Errorf("get robot msg setting list error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func GetTypeRobotMsgSettingListOfEnd(t int64) ([]TypeRobotMsgSetting, error) {
+	var list []TypeRobotMsgSetting
+	err := x.Where("type = ?", t).And("setting_type >= ?", SETTING_FULL_GROUP_START).And("setting_type < ?", SETTING_FULL_GROUP_IMG_NOTIFY).Find(&list)
+	if err != nil {
+		plog.Errorf("get robot msg setting list error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func GetTypeRobotMsgSettingListOfEndNotify(t int64) ([]TypeRobotMsgSetting, error) {
+	var list []TypeRobotMsgSetting
+	err := x.Where("type = ?", t).And("setting_type >= ?", SETTING_FULL_GROUP_IMG_NOTIFY).Find(&list)
 	if err != nil {
 		plog.Errorf("get robot msg setting list error: %v", err)
 		return nil, err

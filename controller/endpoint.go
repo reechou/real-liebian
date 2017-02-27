@@ -210,6 +210,7 @@ func (xhs *XHttpServer) createRobotMsgSetting(rsp http.ResponseWriter, req *http
 		Robot:       info.Robot,
 		Msg:         string(msg),
 		Interval:    info.Interval,
+		After:       info.After,
 	}
 	err := CreateTypeRobotMsgSetting(&setting)
 	if err != nil {
@@ -217,11 +218,13 @@ func (xhs *XHttpServer) createRobotMsgSetting(rsp http.ResponseWriter, req *http
 		response.Msg = fmt.Sprintf("create type robot msg setting failed: %v", err)
 		return response, nil
 	}
-	acg := NewAutoCheckGroup(setting, xhs.rbExt, xhs.rul)
-	go acg.Run()
-	xhs.Lock()
-	xhs.acMap[setting.ID] = acg
-	xhs.Unlock()
+	if setting.SettingType < SETTING_FULL_GROUP_START {
+		acg := NewAutoCheckGroup(setting, xhs.rbExt, xhs.rul)
+		go acg.Run()
+		xhs.Lock()
+		xhs.acMap[setting.ID] = acg
+		xhs.Unlock()
+	}
 
 	return response, nil
 }
@@ -295,6 +298,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 		return response, nil
 	}
 	plog.Debugf("receive robot msg: %v", info)
+	xhs.fgm.FilterReceiveMsg(info)
 	qrCodeInfo, ok, err := xhs.getNowActiveGroup(info.BaseInfo.FromGroupName)
 	if err != nil {
 		plog.Errorf("get now active group error: %v", err)
@@ -324,6 +328,7 @@ func (xhs *XHttpServer) handleRobotMsg(qrCodeUrlInfo *QRCodeUrlInfo, msg *Receiv
 		}
 		if msg.GroupMemberNum >= maxNum {
 			xhs.changeActiveGroup(qrCodeUrlInfo)
+			xhs.fgm.GroupFull(qrCodeUrlInfo)
 			return
 		}
 		qrCodeUrlInfo.IfMod = 1
@@ -332,10 +337,11 @@ func (xhs *XHttpServer) handleRobotMsg(qrCodeUrlInfo *QRCodeUrlInfo, msg *Receiv
 }
 
 func (xhs *XHttpServer) changeActiveGroup(qrCodeUrlInfo *QRCodeUrlInfo) {
-	plog.Infof("qrcodeurlinfo[%v] change active group", qrCodeUrlInfo)
 	qrCodeUrlInfo.Status = 1
-	UpdateQRCodeUrlInfoStatus(qrCodeUrlInfo)
-	xhs.rul.DelGroup(qrCodeUrlInfo.ID)
+	//UpdateQRCodeUrlInfoStatus(qrCodeUrlInfo)
+	UpdateQRCodeUrlInfoStatusFromName(qrCodeUrlInfo)
+	//xhs.rul.DelGroup(qrCodeUrlInfo.ID)
+	plog.Infof("qrcodeurlinfo[%v] group full.", qrCodeUrlInfo)
 }
 
 func (xhs *XHttpServer) getNowActiveGroup(group string) (*QRCodeUrlInfo, bool, error) {

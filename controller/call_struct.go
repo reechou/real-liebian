@@ -17,6 +17,7 @@ type CreateRobotMsgSettingReq struct {
 	Robot       string    `json:"robot"`
 	Msg         []MsgInfo `json:"msg"`
 	Interval    int64     `json:"interval"`
+	After       int64     `json:"after"`
 }
 
 type DelRobotMsgSettingReq struct {

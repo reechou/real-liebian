@@ -163,7 +163,7 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 			MsgType:    v.MsgType,
 			Msg:        v.Msg,
 		})
-		self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
+		self.robotExt.SendMsgs(info.Type, robot, &sendReq)
 		time.Sleep(2 * time.Second)
 	}
 }
@@ -189,7 +189,7 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 			Msg:        prefix + " " + v.Msg,
 		})
 	}
-	self.robotExt.SendMsgs(self.setting.Robot, &sendReq)
+	self.robotExt.SendMsgs(info.Type, robot, &sendReq)
 }
 
 func init() {

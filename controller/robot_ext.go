@@ -22,8 +22,9 @@ func NewRobotExt(cfg *config.Config) *RobotExt {
 	}
 }
 
-func (self *RobotExt) SendMsgs(robotWx string, msg *SendMsgInfo) error {
-	plog.Debugf("robot[%s] send msg: %v", robotWx, msg)
+func (self *RobotExt) SendMsgs(t int64, robotWx string, msg *SendMsgInfo) error {
+	host := self.getRobotHost(t)
+	plog.Debugf("robot[%s] host[%s] send msg: %v", robotWx, msg, host)
 	
 	reqBytes, err := json.Marshal(msg)
 	if err != nil {
@@ -31,7 +32,7 @@ func (self *RobotExt) SendMsgs(robotWx string, msg *SendMsgInfo) error {
 		return err
 	}
 	
-	url := "http://" + self.cfg.WxRobotExt.Host + "/sendmsgs"
+	url := "http://" + host + "/sendmsgs"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBytes))
 	if err != nil {
 		plog.Errorf("http new request error: %v", err)
@@ -61,4 +62,24 @@ func (self *RobotExt) SendMsgs(robotWx string, msg *SendMsgInfo) error {
 	}
 	
 	return nil
+}
+
+func (self *RobotExt) getRobotHost(t int64) string {
+	tgs := &TypeGroupSetting{
+		Type: t,
+	}
+	has, err := GetTypeGroupSetting(tgs)
+	if err != nil {
+		plog.Errorf("get type group setting error: %v", err)
+		return self.cfg.WxRobotExt.Host
+	}
+	if !has {
+		plog.Errorf("has none this type[%d] of group setting", t)
+		return self.cfg.WxRobotExt.Host
+	}
+	if tgs.RobotHost == "" {
+		plog.Debugf("not found the type[%d] of robot host", t)
+		return self.cfg.WxRobotExt.Host
+	}
+	return tgs.RobotHost
 }

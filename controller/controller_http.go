@@ -17,6 +17,7 @@ type XHttpServer struct {
 	rul   *RobotUserLogic
 	acMap map[int64]*AutoCheckGroup
 	rbExt *RobotExt
+	fgm   *FullGroupManager
 }
 
 type HttpHandler func(rsp http.ResponseWriter, req *http.Request) (interface{}, error)
@@ -33,6 +34,7 @@ func NewXHttpServer(addr string, port int, logic *ControllerLogic, rul *RobotUse
 		acMap: make(map[int64]*AutoCheckGroup),
 		rbExt: NewRobotExt(logic.cfg),
 	}
+	xhs.fgm = NewFullGroupManager(xhs.rbExt, xhs.rul)
 	xhs.initAutoCheckGroupList()
 	xhs.registerHandlers()
 
