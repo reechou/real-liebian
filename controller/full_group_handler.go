@@ -103,7 +103,7 @@ func (self *GroupFullHandler) run() {
 	
 	for {
 		select {
-		case <-time.After(15 * time.Second):
+		case <-time.After(31 * time.Second):
 			ok := self.check()
 			if ok {
 				plog.Debugf("qrcodeinfo[%v] group full control run end.", self.qrCodeInfo)
