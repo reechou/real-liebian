@@ -2,16 +2,16 @@ package controller
 
 import (
 	"encoding/json"
-	"strings"
-	"time"
 	"math/rand"
+	"strings"
 	"sync"
+	"time"
 )
 
 const (
-	SETTING_TYPE_GROUP_ADD = iota   // 群成员增加
-	SETTING_TYPE_GROUP_USER_MSG_IMG // 群成员发送图片
-	SETTING_TYPE_GROUP_OTHER        // 其他
+	SETTING_TYPE_GROUP_ADD          = iota // 群成员增加
+	SETTING_TYPE_GROUP_USER_MSG_IMG        // 群成员发送图片
+	SETTING_TYPE_GROUP_OTHER               // 其他
 )
 
 var (
@@ -42,6 +42,7 @@ type AutoCheckGroup struct {
 	msgs     []MsgInfo
 	robotExt *RobotExt
 	rul      *RobotUserLogic
+	idx      int
 
 	stop chan struct{}
 	done chan struct{}
@@ -87,19 +88,19 @@ func (self *AutoCheckGroup) Run() {
 func (self *AutoCheckGroup) Refresh(setting *TypeRobotMsgSetting) {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	self.setting.Type = setting.Type
 	self.setting.SettingType = setting.SettingType
 	self.setting.Robot = setting.Robot
 	self.setting.Msg = setting.Msg
 	self.setting.Interval = setting.Interval
-	
+
 	self.msgs = make([]MsgInfo, 0)
 	err := json.Unmarshal([]byte(self.setting.Msg), &self.msgs)
 	if err != nil {
 		plog.Errorf("get setting msgs error: %v", err)
 	}
-	
+
 	plog.Infof("refresh auto group check setting: %v.", self.setting)
 	plog.Infof("refresh auto group check msg: %v.", self.msgs)
 }
@@ -107,12 +108,13 @@ func (self *AutoCheckGroup) Refresh(setting *TypeRobotMsgSetting) {
 func (self *AutoCheckGroup) check() {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	activeList, err := GetQRCodeUrlListFromType(self.setting.Type)
 	if err != nil {
 		plog.Errorf("get qrcode url list from type error: %v", err)
 		return
 	}
+	plog.Debugf("auto check active list: %v", activeList)
 	switch self.setting.SettingType {
 	case SETTING_TYPE_GROUP_ADD:
 		for _, v := range activeList {
@@ -139,10 +141,24 @@ func (self *AutoCheckGroup) check() {
 }
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
-	robot := info.RobotWx
-	if robot == "" {
-		robot = self.setting.Robot
+	list, err := GetQRCodeUrlRobotList(info.ID)
+	if err != nil {
+		plog.Errorf("get qrcode robot list error: %v", err)
+		return
 	}
+	if len(list) == 0 {
+		plog.Errorf("cannot found robot from id[%d]", info.ID)
+		return
+	}
+	listIdx := self.idx % len(list)
+	self.idx++
+	if self.idx == 100 {
+		self.idx = 0
+	}
+	robot := list[listIdx].RobotWx
+	//if robot == "" {
+	//	robot = self.setting.Robot
+	//}
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
 			offset := rand.Intn(len(RANDOM_MSG_ADD))
@@ -159,6 +175,7 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: robot,
 			ChatType:   CHAT_TYPE_GROUP,
+			UserName:   list[listIdx].UserName,
 			NickName:   info.Name,
 			MsgType:    v.MsgType,
 			Msg:        v.Msg,
@@ -169,10 +186,24 @@ func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
 }
 
 func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo) {
-	robot := info.RobotWx
-	if robot == "" {
-		robot = self.setting.Robot
+	list, err := GetQRCodeUrlRobotList(info.ID)
+	if err != nil {
+		plog.Errorf("get qrcode robot list error: %v", err)
+		return
 	}
+	if len(list) == 0 {
+		plog.Errorf("cannot found robot from id[%d]", info.ID)
+		return
+	}
+	listIdx := self.idx % len(list)
+	self.idx++
+	if self.idx == 100 {
+		self.idx = 0
+	}
+	robot := list[listIdx].RobotWx
+	//if robot == "" {
+	//	robot = self.setting.Robot
+	//}
 	var sendReq SendMsgInfo
 	for _, v := range self.msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
@@ -184,6 +215,7 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: robot,
 			ChatType:   CHAT_TYPE_GROUP,
+			UserName:   list[listIdx].UserName,
 			NickName:   info.Name,
 			MsgType:    v.MsgType,
 			Msg:        prefix + " " + v.Msg,

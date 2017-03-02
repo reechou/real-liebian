@@ -29,13 +29,13 @@ type GetFromType struct {
 }
 
 type GetAllQRCodeFromType struct {
-	Type int64 `json:"type"`
+	Type   int64 `json:"type"`
 	Offset int64 `json:"offset"`
-	Num int64 `json:"num"`
+	Num    int64 `json:"num"`
 }
 
 type GetAllQRCodeRsp struct {
-	Count int64 `json:"count"`
+	Count int64           `json:"count"`
 	List  []QRCodeUrlInfo `json:"list"`
 }
 

@@ -1,37 +1,37 @@
 package controller
 
 import (
-	"net/http"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	
+	"net/http"
+
 	"github.com/reechou/real-liebian/config"
 )
 
 type RobotExt struct {
-	cfg *config.Config
+	cfg    *config.Config
 	client *http.Client
 }
 
 func NewRobotExt(cfg *config.Config) *RobotExt {
 	return &RobotExt{
 		client: &http.Client{},
-		cfg: cfg,
+		cfg:    cfg,
 	}
 }
 
 func (self *RobotExt) SendMsgs(t int64, robotWx string, msg *SendMsgInfo) error {
 	host := self.getRobotHost(t)
-	plog.Debugf("robot[%s] host[%s] send msg: %v", robotWx, msg, host)
-	
+	plog.Debugf("robot[%s] host[%s] send msg: %v", robotWx, host, msg)
+
 	reqBytes, err := json.Marshal(msg)
 	if err != nil {
 		plog.Errorf("json encode error: %v", err)
 		return err
 	}
-	
+
 	url := "http://" + host + "/sendmsgs"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBytes))
 	if err != nil {
@@ -60,7 +60,7 @@ func (self *RobotExt) SendMsgs(t int64, robotWx string, msg *SendMsgInfo) error 
 		plog.Errorf("send msg[%v] result code error: %d %s", msg, response.Code, response.Msg)
 		return fmt.Errorf("send msg result error.")
 	}
-	
+
 	return nil
 }
 

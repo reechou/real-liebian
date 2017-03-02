@@ -9,7 +9,7 @@ type UserQRCodeUrl struct {
 	AppId     string `xorm:"not null default '' varchar(128) unique(account_qrcode_url)" json:"appId"`
 	OpenId    string `xorm:"not null default '' varchar(128) unique(account_qrcode_url)" json:"openId"`
 	Type      int64  `xorm:"not null default 0 int unique(account_qrcode_url)" json:"type"`
-	Url       string  `xorm:"not null default '' varchar(256)" json:"url"`
+	Url       string `xorm:"not null default '' varchar(256)" json:"url"`
 	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
 }
 

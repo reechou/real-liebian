@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"sync"
-	"strings"
 	"regexp"
+	"strings"
+	"sync"
 
 	"github.com/kyokomi/emoji"
 )
@@ -17,21 +17,21 @@ func NewRobotUserLogic() *RobotUserLogic {
 	rul := &RobotUserLogic{
 		UserRobotImgMap: make(map[int64][]string),
 	}
-	
+
 	return rul
 }
 
 func (self *RobotUserLogic) GetGroup(id int64) []string {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	return self.UserRobotImgMap[id]
 }
 
 func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	reg := regexp.MustCompile(`<span class=\"emoji (.*?)\"><\/span>`)
 	regList := reg.FindAllString(user, -1)
 	for _, v := range regList {
@@ -44,7 +44,7 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 		}
 	}
 	//fmt.Println(emoji.Sprintf(user))
-	
+
 	userList := self.UserRobotImgMap[id]
 	//user = strings.Replace(user, "<span class=\"emoji ", "", -1)
 	//user = strings.Replace(user, "\"></span>", "", -1)
@@ -55,13 +55,13 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 func (self *RobotUserLogic) DelGroup(id int64) {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	delete(self.UserRobotImgMap, id)
 }
 
 func (self *RobotUserLogic) ClearGroup(id int64) {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	self.UserRobotImgMap[id] = nil
 }

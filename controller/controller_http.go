@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"time"
 	"sync"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -30,7 +30,7 @@ func NewXHttpServer(addr string, port int, logic *ControllerLogic, rul *RobotUse
 			Routers:  make(map[string]http.HandlerFunc),
 		},
 		logic: logic,
-		rul: rul,
+		rul:   rul,
 		acMap: make(map[int64]*AutoCheckGroup),
 		rbExt: NewRobotExt(logic.cfg),
 	}
@@ -58,7 +58,7 @@ func (xhs *XHttpServer) registerHandlers() {
 	xhs.hs.Route("/liebian/create_robot_msg_setting", xhs.httpWrap(xhs.createRobotMsgSetting))
 	xhs.hs.Route("/liebian/del_robot_msg_setting", xhs.httpWrap(xhs.delRobotMsgSetting))
 	xhs.hs.Route("/liebian/refresh_robot_msg_setting", xhs.httpWrap(xhs.refreshRobotMsgSetting))
-	
+
 	xhs.hs.Route("/robot/receive_msg", xhs.httpWrap(xhs.RobotReceiveMsg))
 }
 

@@ -26,14 +26,17 @@ type GroupFullHandler struct {
 	qrCodeInfo *QRCodeUrlInfo
 	rul        *RobotUserLogic
 	robotExt   *RobotExt
-	
+
 	fgm FullGroupManagerInterface
 
 	settingDoneMap    map[int64]int
 	settingList       []TypeRobotMsgSetting
 	notifySettingList []TypeRobotMsgSetting
+	robotList         []QRCodeUrlRobot
 
-	startTime int64
+	startTime  int64
+	checkTimes int
+	idx        int
 
 	stop chan struct{}
 	done chan struct{}
@@ -83,10 +86,21 @@ func (self *GroupFullHandler) init() bool {
 		plog.Debugf("type[%d] has no setting of end.", self.qrCodeInfo.Type)
 		return false
 	}
+	robotList, err := GetQRCodeUrlRobotList(self.qrCodeInfo.ID)
+	if err != nil {
+		plog.Errorf("qrcodeid[%d] get robot list end.", self.qrCodeInfo.ID)
+		return false
+	}
+	if len(robotList) == 0 {
+		plog.Debugf("qrcodeid[%d] has no robot list.", self.qrCodeInfo.ID)
+		return false
+	}
 	self.settingList = list
 	self.notifySettingList = notifyList
+	self.robotList = robotList
+	plog.Debugf("full group[%d][%s] robot list: %v", self.qrCodeInfo.ID, self.qrCodeInfo.Name, self.robotList)
 	plog.Debugf("type[%d] name[%s] init start setting: %v %v", self.qrCodeInfo.Type, self.qrCodeInfo.Name, self.settingList, self.notifySettingList)
-	
+
 	return true
 }
 
@@ -100,7 +114,7 @@ func (self *GroupFullHandler) run() {
 	defer func() {
 		self.end()
 	}()
-	
+
 	for {
 		select {
 		case <-time.After(31 * time.Second):
@@ -165,7 +179,13 @@ func (self *GroupFullHandler) check() bool {
 }
 
 func (self *GroupFullHandler) sendMsgs(msgs []MsgInfo) {
-	robot := self.qrCodeInfo.RobotWx
+	listIdx := self.idx % len(self.robotList)
+	self.idx++
+	if self.idx == 100 {
+		self.idx = 0
+	}
+	robot := self.robotList[listIdx].RobotWx
+	//robot := self.qrCodeInfo.RobotWx
 	for _, v := range msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
 			offset := rand.Intn(len(RANDOM_MSG_ADD))
@@ -182,6 +202,7 @@ func (self *GroupFullHandler) sendMsgs(msgs []MsgInfo) {
 		sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 			WechatNick: robot,
 			ChatType:   CHAT_TYPE_GROUP,
+			UserName:   self.robotList[listIdx].UserName,
 			NickName:   self.qrCodeInfo.Name,
 			MsgType:    v.MsgType,
 			Msg:        v.Msg,
@@ -192,7 +213,13 @@ func (self *GroupFullHandler) sendMsgs(msgs []MsgInfo) {
 }
 
 func (self *GroupFullHandler) sendMsgsAddPrefix(prefix string, msgs []MsgInfo) {
-	robot := self.qrCodeInfo.RobotWx
+	listIdx := self.idx % len(self.robotList)
+	self.idx++
+	if self.idx == 100 {
+		self.idx = 0
+	}
+	robot := self.robotList[listIdx].RobotWx
+	//robot := self.qrCodeInfo.RobotWx
 	var sendReq SendMsgInfo
 	for _, v := range msgs {
 		if v.MsgType == MSG_TYPE_TEXT {
@@ -203,6 +230,7 @@ func (self *GroupFullHandler) sendMsgsAddPrefix(prefix string, msgs []MsgInfo) {
 			sendReq.SendMsgs = append(sendReq.SendMsgs, SendBaseInfo{
 				WechatNick: robot,
 				ChatType:   CHAT_TYPE_GROUP,
+				UserName:   self.robotList[listIdx].UserName,
 				NickName:   self.qrCodeInfo.Name,
 				MsgType:    v.MsgType,
 				Msg:        prefix + " " + v.Msg,

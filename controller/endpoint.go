@@ -3,8 +3,8 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"math/rand"
+	"net/http"
 	//"time"
 )
 
@@ -35,14 +35,14 @@ func (xhs *XHttpServer) addQRCodeUrlList(rsp http.ResponseWriter, req *http.Requ
 		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
 		return response, nil
 	}
-	
+
 	err := CreateQRCodeUrlInfoList(info)
 	if err != nil {
 		response.Code = RES_ERR
 		response.Msg = fmt.Sprintf("add qrcode url list failed: %v", err)
 		return response, nil
 	}
-	
+
 	return response, nil
 }
 
@@ -54,7 +54,7 @@ func (xhs *XHttpServer) getAllQRCodeUrlInfoList(rsp http.ResponseWriter, req *ht
 		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
 		return response, nil
 	}
-	
+
 	count, err := GetAllQRCodeUrlInfoFromTypeCount(info.Type)
 	if err != nil {
 		response.Code = RES_ERR
@@ -69,10 +69,10 @@ func (xhs *XHttpServer) getAllQRCodeUrlInfoList(rsp http.ResponseWriter, req *ht
 	}
 	result := &GetAllQRCodeRsp{
 		Count: count,
-		List: list,
+		List:  list,
 	}
 	response.Data = result
-	
+
 	return response, nil
 }
 func (xhs *XHttpServer) getActiveQRCodeUrlInfoList(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
@@ -84,7 +84,7 @@ func (xhs *XHttpServer) getActiveQRCodeUrlInfoList(rsp http.ResponseWriter, req 
 		return response, nil
 	}
 	plog.Debugf("getActiveQRCodeUrlInfoList req: %v", info)
-	
+
 	list, err := GetQRCodeUrlListFromType(info.Type)
 	if err != nil {
 		response.Code = RES_ERR
@@ -92,10 +92,9 @@ func (xhs *XHttpServer) getActiveQRCodeUrlInfoList(rsp http.ResponseWriter, req 
 		return response, nil
 	}
 	response.Data = list
-	
+
 	return response, nil
 }
-
 
 func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
 	response := &Response{Code: RES_OK}
@@ -237,7 +236,7 @@ func (xhs *XHttpServer) delRobotMsgSetting(rsp http.ResponseWriter, req *http.Re
 		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
 		return response, nil
 	}
-	
+
 	err := DelTypeRobotMsgSetting(info.Id)
 	if err != nil {
 		response.Code = RES_ERR
@@ -251,7 +250,7 @@ func (xhs *XHttpServer) delRobotMsgSetting(rsp http.ResponseWriter, req *http.Re
 		acg.Stop()
 		delete(xhs.acMap, info.Id)
 	}
-	
+
 	return response, nil
 }
 
@@ -263,7 +262,7 @@ func (xhs *XHttpServer) refreshRobotMsgSetting(rsp http.ResponseWriter, req *htt
 		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
 		return response, nil
 	}
-	
+
 	acg, ok := xhs.acMap[info.Id]
 	if !ok {
 		response.Code = RES_ERR
@@ -285,7 +284,7 @@ func (xhs *XHttpServer) refreshRobotMsgSetting(rsp http.ResponseWriter, req *htt
 		return response, nil
 	}
 	acg.Refresh(setting)
-	
+
 	return response, nil
 }
 
@@ -299,16 +298,31 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 	}
 	plog.Debugf("receive robot msg: %v", info)
 	xhs.fgm.FilterReceiveMsg(info)
-	qrCodeInfo, ok, err := xhs.getNowActiveGroup(info.BaseInfo.FromGroupName)
+	qrCodeInfo, ok, err := xhs.getNowActiveGroup(&info)
 	//plog.Debugf("get receive msg qrCodeInfo: %v %v", qrCodeInfo, ok)
 	if err != nil {
 		plog.Errorf("get now active group error: %v", err)
 		return response, nil
 	}
 	if ok {
-		if qrCodeInfo.RobotWx != info.BaseInfo.WechatNick {
-			qrCodeInfo.RobotWx = info.BaseInfo.WechatNick
-			UpdateQRCodeUrlInfoRobotWx(qrCodeInfo)
+		qrcodeRobot := &QRCodeUrlRobot{
+			QrcodeId: qrCodeInfo.ID,
+		}
+		has, err := GetQRCodeUrlRobot(qrcodeRobot)
+		if err != nil {
+			plog.Errorf("get qrcode url robot from qrcodeid error: %v", err)
+			return response, nil
+		}
+		if !has {
+			qrcodeRobot.UserName = info.BaseInfo.FromUserName
+			qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
+			CreateQRCodeUrlRobot(qrcodeRobot)
+		} else {
+			if qrcodeRobot.RobotWx != info.BaseInfo.WechatNick || qrcodeRobot.UserName != info.BaseInfo.FromUserName {
+				qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
+				qrcodeRobot.UserName = info.BaseInfo.FromUserName
+				UpdateQRCodeUrlRobot(qrcodeRobot)
+			}
 		}
 		xhs.handleRobotMsg(qrCodeInfo, &info)
 	}
@@ -345,9 +359,9 @@ func (xhs *XHttpServer) changeActiveGroup(qrCodeUrlInfo *QRCodeUrlInfo) {
 	plog.Infof("qrcodeurlinfo[%v] group full.", qrCodeUrlInfo)
 }
 
-func (xhs *XHttpServer) getNowActiveGroup(group string) (*QRCodeUrlInfo, bool, error) {
+func (xhs *XHttpServer) getNowActiveGroup(msg *ReceiveMsgInfo) (*QRCodeUrlInfo, bool, error) {
 	qrcodeUrlInfo := &QRCodeUrlInfo{
-		Name: group,
+		Name: msg.BaseInfo.FromGroupName,
 	}
 	has, err := GetQRCodeUrlInfo(qrcodeUrlInfo)
 	if err != nil {
@@ -355,7 +369,29 @@ func (xhs *XHttpServer) getNowActiveGroup(group string) (*QRCodeUrlInfo, bool, e
 		return nil, false, err
 	}
 	if !has {
-		return nil, false, nil
+		qrcodeUrlInfoRobot := &QRCodeUrlRobot{
+			UserName: msg.BaseInfo.FromUserName,
+			RobotWx:  msg.BaseInfo.WechatNick,
+		}
+		has, err = GetQRCodeUrlRobotFromRobot(qrcodeUrlInfoRobot)
+		if err != nil {
+			plog.Errorf("get qrcode info robot from robot username error: %v", err)
+			return nil, false, err
+		}
+		if !has {
+			return nil, false, nil
+		}
+		qrcodeUrlInfo = &QRCodeUrlInfo{
+			ID: qrcodeUrlInfoRobot.QrcodeId,
+		}
+		has, err = GetQRCodeUrlInfoFromId(qrcodeUrlInfo)
+		if err != nil {
+			plog.Errorf("get qrcode info from robot username error: %v", err)
+			return nil, false, err
+		}
+		if !has {
+			return nil, false, nil
+		}
 	}
 	//plog.Debugf("active 1 %v", qrcodeUrlInfo)
 	groupList, err := GetQRCodeUrlListFromType(qrcodeUrlInfo.Type)

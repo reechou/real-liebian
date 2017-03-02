@@ -36,10 +36,11 @@ type Config struct {
 
 	Debug bool
 
-	ListenAddr    string
-	ListenPort    int
-	QRCodeExpired int64
-	GroupMaxNum   int
+	ListenAddr             string
+	ListenPort             int
+	QRCodeExpired          int64
+	GroupMaxNum            int
+	FullGroupImgCheckTimes int
 
 	utils.MysqlInfo
 	AliyunOss

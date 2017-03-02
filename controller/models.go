@@ -32,7 +32,8 @@ func InitDB(cfg *config.Config) {
 	if err = x.Sync2(new(QRCodeUrlInfo),
 		new(UserQRCodeUrl),
 		new(TypeGroupSetting),
-		new(TypeRobotMsgSetting)); err != nil {
+		new(TypeRobotMsgSetting),
+		new(QRCodeUrlRobot)); err != nil {
 		plog.Fatalf("Fail to sync database: %v", err)
 	}
 }

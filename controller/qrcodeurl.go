@@ -12,9 +12,9 @@ type QRCodeUrlInfo struct {
 	Name      string `xorm:"not null default '' varchar(128) index" json:"name"`
 	Url       string `xorm:"not null default '' varchar(256)" json:"url"`
 	Type      int64  `xorm:"not null default 0 int index" json:"type"`
-	UserName  string `xorm:"not null default '' varchar(128)" json:"userName"`
+	UserName  string `xorm:"not null default '' varchar(128) index" json:"userName"`
 	IfMod     int64  `xorm:"not null default 0 int" json:"ifMod"`
-	RobotWx   string `xorm:"not null default '' varchar(128)" json:"robotWx"`
+	RobotWx   string `xorm:"not null default '' varchar(128) index" json:"robotWx"`
 	Status    int64  `xorm:"not null default 0 int index" json:"status"`
 	CreatedAt int64  `xorm:"not null default 0 int index" json:"createdAt"`
 }
@@ -41,18 +41,18 @@ func CreateQRCodeUrlInfoList(list []QRCodeUrlInfo) error {
 	if len(list) == 0 {
 		return nil
 	}
-	
+
 	now := time.Now().Unix()
 	for i := 0; i < len(list); i++ {
 		list[i].CreatedAt = now
 	}
-	
+
 	_, err := x.Insert(&list)
 	if err != nil {
 		plog.Errorf("create qrcode url info list error: %v", err)
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -75,6 +75,18 @@ func GetAllQRCodeUrlInfoFromType(t, offset, num int64) ([]QRCodeUrlInfo, error) 
 	return list, nil
 }
 
+func GetQRCodeUrlInfoFromId(info *QRCodeUrlInfo) (bool, error) {
+	has, err := x.Where("id = ?", info.ID).Get(info)
+	if err != nil {
+		return false, err
+	}
+	if !has {
+		plog.Debugf("cannot find qrcode url info from id[%v]", info)
+		return false, nil
+	}
+	return true, nil
+}
+
 func GetQRCodeUrlInfo(info *QRCodeUrlInfo) (bool, error) {
 	has, err := x.Where("name = ?", info.Name).Get(info)
 	if err != nil {
@@ -82,6 +94,18 @@ func GetQRCodeUrlInfo(info *QRCodeUrlInfo) (bool, error) {
 	}
 	if !has {
 		plog.Debugf("cannot find qrcode url info from info[%v]", info)
+		return false, nil
+	}
+	return true, nil
+}
+
+func GetQRCodeUrlInfoFromRobotUserName(info *QRCodeUrlInfo) (bool, error) {
+	has, err := x.Where("robot_wx = ?", info.RobotWx).And("user_name = ?", info.UserName).Get(info)
+	if err != nil {
+		return false, err
+	}
+	if !has {
+		plog.Debugf("cannot find qrcode url info from robot username info[%v]", info)
 		return false, nil
 	}
 	return true, nil
@@ -141,6 +165,6 @@ func UpdateQRCodeUrlInfoIfMod(info *QRCodeUrlInfo) error {
 }
 
 func UpdateQRCodeUrlInfoRobotWx(info *QRCodeUrlInfo) error {
-	_, err := x.ID(info.ID).Cols("robot_wx").Update(info)
+	_, err := x.ID(info.ID).Cols("user_name", "robot_wx").Update(info)
 	return err
 }

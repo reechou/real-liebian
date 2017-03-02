@@ -17,8 +17,8 @@ type ControllerLogic struct {
 
 	aliyunOss *config.AliyunOss
 	//cdb       *ControllerDB
-	xServer   *XHttpServer
-	rul *RobotUserLogic
+	xServer *XHttpServer
+	rul     *RobotUserLogic
 
 	qrCodeUpateTime int64
 	qrCodeUrlIdx    int
@@ -29,10 +29,10 @@ type ControllerLogic struct {
 
 func NewControllerLogic(cfg *config.Config) *ControllerLogic {
 	cl := &ControllerLogic{
-		cfg:          cfg,
-		aliyunOss:    &cfg.AliyunOss,
-		stop:         make(chan struct{}),
-		done:         make(chan struct{}),
+		cfg:       cfg,
+		aliyunOss: &cfg.AliyunOss,
+		stop:      make(chan struct{}),
+		done:      make(chan struct{}),
 	}
 	aliyunClient, err := oss.New(cl.aliyunOss.Endpoint, cl.aliyunOss.AccessKeyId, cl.aliyunOss.AccessKeySecret)
 	if err != nil {

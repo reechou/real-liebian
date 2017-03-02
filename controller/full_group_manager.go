@@ -12,11 +12,11 @@ type FullGroupManagerInterface interface {
 type FullGroupManager struct {
 	sync.Mutex
 	robotExt *RobotExt
-	rul *RobotUserLogic
-	
+	rul      *RobotUserLogic
+
 	fghMap map[int64]*GroupFullHandler
-	msgs chan ReceiveMsgInfo
-	
+	msgs   chan ReceiveMsgInfo
+
 	stop chan struct{}
 	done chan struct{}
 }
@@ -24,14 +24,14 @@ type FullGroupManager struct {
 func NewFullGroupManager(robotExt *RobotExt, rul *RobotUserLogic) *FullGroupManager {
 	fgm := &FullGroupManager{
 		robotExt: robotExt,
-		rul: rul,
-		fghMap: make(map[int64]*GroupFullHandler),
-		msgs: make(chan ReceiveMsgInfo, 1024),
-		stop: make(chan struct{}),
-		done: make(chan struct{}),
+		rul:      rul,
+		fghMap:   make(map[int64]*GroupFullHandler),
+		msgs:     make(chan ReceiveMsgInfo, 1024),
+		stop:     make(chan struct{}),
+		done:     make(chan struct{}),
 	}
 	go fgm.run()
-	
+
 	return fgm
 }
 
@@ -81,7 +81,7 @@ func (self *FullGroupManager) Stop() {
 	for _, v := range self.fghMap {
 		v.Stop()
 	}
-	
+
 	close(self.stop)
 	<-self.done
 }
@@ -89,7 +89,7 @@ func (self *FullGroupManager) Stop() {
 func (self *FullGroupManager) FilterReceiveMsg(msg ReceiveMsgInfo) {
 	select {
 	case self.msgs <- msg:
-	case <-time.After(2*time.Second):
+	case <-time.After(2 * time.Second):
 		plog.Errorf("filter receive msg maybe channal is full.")
 		return
 	}
@@ -98,7 +98,7 @@ func (self *FullGroupManager) FilterReceiveMsg(msg ReceiveMsgInfo) {
 func (self *FullGroupManager) ControlEnd(qrcodeId int64) {
 	self.Lock()
 	defer self.Unlock()
-	
+
 	delete(self.fghMap, qrcodeId)
 }
 
@@ -109,12 +109,12 @@ func (self *FullGroupManager) GroupFull(qrcodeInfo *QRCodeUrlInfo) {
 	if ok {
 		return
 	}
-	
+
 	fgh := NewGroupFullHandler(qrcodeInfo, self.robotExt, self.rul, self)
 	if fgh == nil {
 		return
 	}
-	
+
 	self.Lock()
 	self.fghMap[qrcodeInfo.ID] = fgh
 	self.Unlock()
