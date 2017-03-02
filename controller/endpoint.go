@@ -314,6 +314,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 			return response, nil
 		}
 		if !has {
+			qrcodeRobot.GroupName = qrCodeInfo.Name
 			qrcodeRobot.UserName = info.BaseInfo.FromUserName
 			qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
 			CreateQRCodeUrlRobot(qrcodeRobot)

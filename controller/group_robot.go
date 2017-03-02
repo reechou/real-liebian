@@ -7,6 +7,7 @@ import (
 type QRCodeUrlRobot struct {
 	ID        int64  `xorm:"pk autoincr" json:"id"`
 	QrcodeId  int64  `xorm:"not null default 0 int index" json:"qrcodeId"`
+	GroupName string `xorm:"not null default '' varchar(128)" json:"groupName"`
 	UserName  string `xorm:"not null default '' varchar(128) unique(robot)" json:"userName"`
 	RobotWx   string `xorm:"not null default '' varchar(128) unique(robot)" json:"robotWx"`
 	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
