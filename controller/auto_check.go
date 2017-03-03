@@ -195,6 +195,9 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 		plog.Errorf("cannot found robot from id[%d]", info.ID)
 		return
 	}
+	for _, v := range list {
+		prefix = strings.Replace(prefix, "@"+v.RobotWx, "", -1)
+	}
 	listIdx := self.idx % len(list)
 	self.idx++
 	if self.idx == 100 {
