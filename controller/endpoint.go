@@ -307,6 +307,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 	if ok {
 		qrcodeRobot := &QRCodeUrlRobot{
 			QrcodeId: qrCodeInfo.ID,
+			RobotWx: info.BaseInfo.WechatNick,
 		}
 		has, err := GetQRCodeUrlRobot(qrcodeRobot)
 		if err != nil {
@@ -319,8 +320,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 			qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
 			CreateQRCodeUrlRobot(qrcodeRobot)
 		} else {
-			if qrcodeRobot.RobotWx != info.BaseInfo.WechatNick || qrcodeRobot.UserName != info.BaseInfo.FromUserName {
-				qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
+			if qrcodeRobot.UserName != info.BaseInfo.FromUserName {
 				qrcodeRobot.UserName = info.BaseInfo.FromUserName
 				UpdateQRCodeUrlRobot(qrcodeRobot)
 			}

@@ -42,7 +42,7 @@ func GetQRCodeUrlRobotFromRobot(info *QRCodeUrlRobot) (bool, error) {
 }
 
 func GetQRCodeUrlRobot(info *QRCodeUrlRobot) (bool, error) {
-	has, err := x.Where("qrcode_id = ?", info.QrcodeId).Get(info)
+	has, err := x.Where("qrcode_id = ?", info.QrcodeId).And("robot_wx = ?", info.RobotWx).Get(info)
 	if err != nil {
 		return false, err
 	}
