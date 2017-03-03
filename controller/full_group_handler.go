@@ -216,6 +216,9 @@ func (self *GroupFullHandler) sendMsgsAddPrefix(prefix string, msgs []MsgInfo) {
 	for _, v := range self.robotList {
 		prefix = strings.Replace(prefix, "@"+v.RobotWx, "", -1)
 	}
+	if !strings.Contains(prefix, "@") {
+		return
+	}
 	
 	listIdx := self.idx % len(self.robotList)
 	self.idx++

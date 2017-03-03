@@ -198,6 +198,10 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 	for _, v := range list {
 		prefix = strings.Replace(prefix, "@"+v.RobotWx, "", -1)
 	}
+	if !strings.Contains(prefix, "@") {
+		return
+	}
+	
 	listIdx := self.idx % len(list)
 	self.idx++
 	if self.idx == 100 {
