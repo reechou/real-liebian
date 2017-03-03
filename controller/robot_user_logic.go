@@ -46,6 +46,11 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 	//fmt.Println(emoji.Sprintf(user))
 
 	userList := self.UserRobotImgMap[id]
+	for _, v := range userList {
+		if v == user {
+			return 
+		}
+	}
 	//user = strings.Replace(user, "<span class=\"emoji ", "", -1)
 	//user = strings.Replace(user, "\"></span>", "", -1)
 	self.UserRobotImgMap[id] = append(userList, emoji.Sprintf(user))
