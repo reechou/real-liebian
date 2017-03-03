@@ -104,8 +104,9 @@ func (self *FullGroupManager) ControlEnd(qrcodeId int64) {
 
 func (self *FullGroupManager) GroupFull(qrcodeInfo *QRCodeUrlInfo) {
 	self.Lock()
+	defer self.Unlock()
+	
 	_, ok := self.fghMap[qrcodeInfo.ID]
-	self.Unlock()
 	if ok {
 		return
 	}
@@ -114,8 +115,6 @@ func (self *FullGroupManager) GroupFull(qrcodeInfo *QRCodeUrlInfo) {
 	if fgh == nil {
 		return
 	}
-
-	self.Lock()
+	
 	self.fghMap[qrcodeInfo.ID] = fgh
-	self.Unlock()
 }
