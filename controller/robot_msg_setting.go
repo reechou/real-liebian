@@ -20,7 +20,7 @@ type TypeRobotMsgSetting struct {
 	Type        int64  `xorm:"not null default 0 int index" json:"type"`
 	SettingType int    `xorm:"not null default 0 int index" json:"settingType"`
 	Robot       string `xorm:"not null default '' varchar(128)" json:"robot"`
-	Msg         string `xorm:"not null default '' varchar(768)" json:"msg"`
+	Msg         string `xorm:"not null default '' varchar(2048)" json:"msg"`
 	Interval    int64  `xorm:"not null default 0 int" json:"interval"`
 	After       int64  `xorm:"not null default 0 int" json:"after"`
 	CreatedAt   int64  `xorm:"not null default 0 int" json:"createdAt"`
