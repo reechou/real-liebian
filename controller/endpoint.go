@@ -346,7 +346,7 @@ func (xhs *XHttpServer) getGroupMonitor(rsp http.ResponseWriter, req *http.Reque
 		return response, nil
 	}
 	
-	list, err := GetRobotGroupMonitorFromTime(info.Type, info.StartTime, info.EngTime)
+	list, err := GetRobotGroupMonitorFromTime(info.Type, info.StartTime, info.EndTime)
 	if err != nil {
 		response.Code = RES_ERR
 		response.Msg = fmt.Sprintf("get group monitor failed: %v", err)
