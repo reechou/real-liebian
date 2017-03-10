@@ -19,6 +19,7 @@ type ControllerLogic struct {
 	//cdb       *ControllerDB
 	xServer *XHttpServer
 	rul     *RobotUserLogic
+	monitor *WxGroupMonitor
 
 	qrCodeUpateTime int64
 	qrCodeUrlIdx    int
@@ -52,6 +53,7 @@ func NewControllerLogic(cfg *config.Config) *ControllerLogic {
 
 	InitDB(cfg)
 	cl.rul = NewRobotUserLogic()
+	cl.monitor = NewWxGroupMonitor()
 	cl.xServer = NewXHttpServer(cfg.ListenAddr, cfg.ListenPort, cl, cl.rul)
 	setupLogging(cfg)
 

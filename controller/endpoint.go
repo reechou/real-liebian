@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	//"time"
+	"time"
 )
 
 func (xhs *XHttpServer) addQRCodeUrl(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
@@ -193,6 +193,89 @@ func (xhs *XHttpServer) createGroupSetting(rsp http.ResponseWriter, req *http.Re
 	return response, nil
 }
 
+func (xhs *XHttpServer) getTypeGroupSettingList(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	
+	list, err := GetTypeGroupSettingList()
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("get type group setting failed: %v", err)
+		return response, nil
+	}
+	response.Data = list
+	
+	return response, nil
+}
+
+func (xhs *XHttpServer) updateTypeGroupSetting(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	
+	var info TypeGroupSetting
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+	
+	err := UpdateTypeGroupSetting(&info)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("update type group setting failed: %v", err)
+		return response, nil
+	}
+	
+	return response, nil
+}
+
+func (xhs *XHttpServer) getTypeMsgSettingListFromType(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	var info GetFromType
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+	
+	list, err := GetTypeRobotMsgSettingAll(info.Type)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("get type msg setting failed: %v", err)
+		return response, nil
+	}
+	response.Data = list
+	
+	return response, nil
+}
+
+func (xhs *XHttpServer) updateTypeMsgSetting(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	
+	var info TypeRobotMsgSetting
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+	
+	err := UpdateTypeRobotMsgSetting(&info)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("update type msg setting failed: %v", err)
+		return response, nil
+	}
+	has, err := GetTypeRobotMsgSetting(&info)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("get acg from id[%d] error: %v", info.ID, err)
+		return response, nil
+	}
+	if has {
+		xhs.refreshMsgSetting(&info)
+	}
+	
+	return response, nil
+}
+
 func (xhs *XHttpServer) createRobotMsgSetting(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
 	response := &Response{Code: RES_OK}
 	var info CreateRobotMsgSettingReq
@@ -251,6 +334,26 @@ func (xhs *XHttpServer) delRobotMsgSetting(rsp http.ResponseWriter, req *http.Re
 		delete(xhs.acMap, info.Id)
 	}
 
+	return response, nil
+}
+
+func (xhs *XHttpServer) getGroupMonitor(rsp http.ResponseWriter, req *http.Request) (interface{}, error) {
+	response := &Response{Code: RES_OK}
+	var info GetGroupMonitorReq
+	if err := xhs.decodeBody(req, &info, nil); err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("Request decode failed: %v", err)
+		return response, nil
+	}
+	
+	list, err := GetRobotGroupMonitorFromTime(info.Type, info.StartTime, info.EngTime)
+	if err != nil {
+		response.Code = RES_ERR
+		response.Msg = fmt.Sprintf("get group monitor failed: %v", err)
+		return response, nil
+	}
+	response.Data = list
+	
 	return response, nil
 }
 
@@ -318,6 +421,7 @@ func (xhs *XHttpServer) RobotReceiveMsg(rsp http.ResponseWriter, req *http.Reque
 			qrcodeRobot.GroupName = qrCodeInfo.Name
 			qrcodeRobot.UserName = info.BaseInfo.FromUserName
 			qrcodeRobot.RobotWx = info.BaseInfo.WechatNick
+			qrcodeRobot.Type = qrCodeInfo.Type
 			CreateQRCodeUrlRobot(qrcodeRobot)
 		} else {
 			if qrcodeRobot.UserName != info.BaseInfo.FromUserName {
@@ -348,12 +452,31 @@ func (xhs *XHttpServer) handleRobotMsg(qrCodeUrlInfo *QRCodeUrlInfo, msg *Receiv
 			return
 		}
 		qrCodeUrlInfo.IfMod = 1
-		UpdateQRCodeUrlInfoIfMod(qrCodeUrlInfo)
+		//UpdateQRCodeUrlInfoIfMod(qrCodeUrlInfo)
+		qrCodeUrlInfo.GroupNum = int64(msg.GroupMemberNum)
+		UpdateQRCodeUrlInfoIfModAndGroupNum(qrCodeUrlInfo)
 	}
+}
+
+func (xhs *XHttpServer) refreshMsgSetting(setting *TypeRobotMsgSetting) {
+	xhs.Lock()
+	defer xhs.Unlock()
+	
+	if setting.SettingType >= SETTING_FULL_GROUP_START {
+		return
+	}
+	
+	acg, ok := xhs.acMap[setting.ID]
+	if !ok {
+		plog.Errorf("cannot found auto check of setting[%d]", setting.ID)
+		return
+	}
+	acg.Refresh(setting)
 }
 
 func (xhs *XHttpServer) changeActiveGroup(qrCodeUrlInfo *QRCodeUrlInfo) {
 	qrCodeUrlInfo.Status = 1
+	qrCodeUrlInfo.EndTime = time.Now().Unix()
 	//UpdateQRCodeUrlInfoStatus(qrCodeUrlInfo)
 	UpdateQRCodeUrlInfoStatusFromName(qrCodeUrlInfo)
 	//xhs.rul.DelGroup(qrCodeUrlInfo.ID)

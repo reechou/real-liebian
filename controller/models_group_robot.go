@@ -7,10 +7,11 @@ import (
 type QRCodeUrlRobot struct {
 	ID        int64  `xorm:"pk autoincr" json:"id"`
 	QrcodeId  int64  `xorm:"not null default 0 int index" json:"qrcodeId"`
+	Type      int64  `xorm:"not null default 0 int index" json:"type"`
 	GroupName string `xorm:"not null default '' varchar(128)" json:"groupName"`
 	UserName  string `xorm:"not null default '' varchar(128) unique(robot)" json:"userName"`
 	RobotWx   string `xorm:"not null default '' varchar(128) unique(robot)" json:"robotWx"`
-	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
+	CreatedAt int64  `xorm:"not null default 0 int index" json:"createdAt"`
 	UpdatedAt int64  `xorm:"not null default 0 int" json:"updatedAt"`
 }
 
@@ -27,6 +28,25 @@ func CreateQRCodeUrlRobot(info *QRCodeUrlRobot) error {
 	plog.Infof("create qrcode[%d] robot[%s] success.", info.QrcodeId, info.RobotWx)
 
 	return nil
+}
+
+func GetQRCodeUrlRobotAllType() ([]QRCodeUrlRobot, error) {
+	var list []QRCodeUrlRobot
+	err := x.Distinct("type").Find(&list)
+	if err != nil {
+		plog.Errorf("get robot all type error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func GetQRCodeUrlRobotCountFromTime(t, startTime, endTime int64) (int64, error) {
+	count, err := x.Where("type = ?", t).And("created_at >= ?", startTime).And("created_at <= ?", endTime).Distinct("group_name").Count(&QRCodeUrlRobot{})
+	if err != nil {
+		plog.Errorf("type[%d] get qrcode robot count error: %v", t, err)
+		return 0, err
+	}
+	return count, nil
 }
 
 func GetQRCodeUrlRobotFromRobot(info *QRCodeUrlRobot) (bool, error) {

@@ -43,6 +43,12 @@ type RefreshRobotMsgSettingReq struct {
 	Id int64 `json:"id"`
 }
 
+type GetGroupMonitorReq struct {
+	Type int64 `json:"type"`
+	StartTime int64 `json:"startTime"`
+	EngTime int64 `json:"endTime"`
+}
+
 const (
 	GET_URL_STATUS_OK = iota
 	GET_URL_STATUS_HAS_EXIST

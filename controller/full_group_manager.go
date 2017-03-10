@@ -113,6 +113,7 @@ func (self *FullGroupManager) GroupFull(qrcodeInfo *QRCodeUrlInfo) {
 
 	fgh := NewGroupFullHandler(qrcodeInfo, self.robotExt, self.rul, self)
 	if fgh == nil {
+		self.rul.DelGroup(qrcodeInfo.ID)
 		return
 	}
 	

@@ -13,6 +13,7 @@ type TypeGroupSetting struct {
 	Type      int64  `xorm:"not null default 0 int unique" json:"type"`
 	GroupNum  int64  `xorm:"not null default 0 int" json:"groupNum"`
 	RobotHost string `xorm:"not null default '' varchar(128)" json:"robotHost"`
+	Desc      string `xorm:"not null default '' varchar(128)" json:"desc"`
 	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
 }
 type TypeRobotMsgSetting struct {
@@ -50,6 +51,42 @@ func GetTypeGroupSetting(info *TypeGroupSetting) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func GetTypeGroupSettingList() ([]TypeGroupSetting, error) {
+	var list []TypeGroupSetting
+	err := x.Find(&list)
+	if err != nil {
+		plog.Errorf("get robot group setting list error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func UpdateTypeGroupSetting(info *TypeGroupSetting) error {
+	_, err := x.ID(info.ID).Cols("group_num", "robot_host", "desc").Update(info)
+	if err != nil {
+		plog.Errorf("update type robot group setting error: %v", err)
+	}
+	return err
+}
+
+func GetTypeRobotMsgSettingAll(t int64) ([]TypeRobotMsgSetting, error) {
+	var list []TypeRobotMsgSetting
+	err := x.Where("type = ?", t).Find(&list)
+	if err != nil {
+		plog.Errorf("get robot msg setting list all from type error: %v", err)
+		return nil, err
+	}
+	return list, nil
+}
+
+func UpdateTypeRobotMsgSetting(info *TypeRobotMsgSetting) error {
+	_, err := x.ID(info.ID).Cols("msg", "interval", "after").Update(info)
+	if err != nil {
+		plog.Errorf("update type robot msg setting error: %v", err)
+	}
+	return err
 }
 
 func GetTypeRobotMsgSettingList() ([]TypeRobotMsgSetting, error) {

@@ -55,11 +55,24 @@ func (xhs *XHttpServer) registerHandlers() {
 	xhs.hs.Route("/liebian/get_active_qrcode_url", xhs.httpWrap(xhs.getActiveQRCodeUrlInfoList))
 	xhs.hs.Route("/liebian/expired_qrcode_url", xhs.httpWrap(xhs.expiredQRCodeUrl))
 	xhs.hs.Route("/liebian/create_group_setting", xhs.httpWrap(xhs.createGroupSetting))
-	xhs.hs.Route("/liebian/create_robot_msg_setting", xhs.httpWrap(xhs.createRobotMsgSetting))
-	xhs.hs.Route("/liebian/del_robot_msg_setting", xhs.httpWrap(xhs.delRobotMsgSetting))
 	xhs.hs.Route("/liebian/refresh_robot_msg_setting", xhs.httpWrap(xhs.refreshRobotMsgSetting))
+	
+	// 获取所有渠道群配置
+	xhs.hs.Route("/liebian/get_type_group_setting_list", xhs.httpWrap(xhs.getTypeGroupSettingList))
+	// 更新渠道群配置
+	xhs.hs.Route("/liebian/update_type_group_setting", xhs.httpWrap(xhs.updateTypeGroupSetting))
+	// 获取渠道消息配置
+	xhs.hs.Route("/liebian/get_type_msg_setting", xhs.httpWrap(xhs.getTypeMsgSettingListFromType))
+	// 更新渠道消息配置
+	xhs.hs.Route("/liebian/update_type_msg_setting", xhs.httpWrap(xhs.updateTypeMsgSetting))
+	// 创建渠道消息配置
+	xhs.hs.Route("/liebian/create_robot_msg_setting", xhs.httpWrap(xhs.createRobotMsgSetting))
+	// 删除渠道消息配置
+	xhs.hs.Route("/liebian/del_robot_msg_setting", xhs.httpWrap(xhs.delRobotMsgSetting))
 
 	xhs.hs.Route("/robot/receive_msg", xhs.httpWrap(xhs.RobotReceiveMsg))
+	
+	xhs.hs.Route("/liebian/get_group_monitor", xhs.httpWrap(xhs.getGroupMonitor))
 }
 
 func (xhs *XHttpServer) initAutoCheckGroupList() {

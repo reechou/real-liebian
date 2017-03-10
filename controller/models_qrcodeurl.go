@@ -15,7 +15,10 @@ type QRCodeUrlInfo struct {
 	UserName  string `xorm:"not null default '' varchar(128) index" json:"userName"`
 	IfMod     int64  `xorm:"not null default 0 int" json:"ifMod"`
 	RobotWx   string `xorm:"not null default '' varchar(128) index" json:"robotWx"`
+	GroupNum  int64  `xorm:"not null default 0 int" json:"groupNum"`
 	Status    int64  `xorm:"not null default 0 int index" json:"status"`
+	EndTime   int64  `xorm:"not null default 0 int index" json:"endTime"`
+	SharedNum int64  `xorm:"not null default 0 int" json:"sharedNum"`
 	CreatedAt int64  `xorm:"not null default 0 int index" json:"createdAt"`
 }
 
@@ -130,6 +133,15 @@ func GetQRCodeUrlInfoList(num, t int64) ([]QRCodeUrlInfo, error) {
 	return list, nil
 }
 
+func GetQRCodeUrlInfoListFromTime(t, startTime, endTime int64) ([]QRCodeUrlInfo, error) {
+	var list []QRCodeUrlInfo
+	err := x.Where("type = ?", t).And("end_time >= ?", startTime).And("end_time <= ?", endTime).Find(&list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func GetQRCodeUrlInfoOfRandom(count, t int64) (*QRCodeUrlInfo, error) {
 	rand.Seed(time.Now().UnixNano())
 	offset := rand.Intn(int(count))
@@ -151,11 +163,21 @@ func UpdateQRCodeUrlInfoStatus(info *QRCodeUrlInfo) error {
 	return err
 }
 
+func UpdateQRCodeUrlInfoSharedNum(info *QRCodeUrlInfo) error {
+	_, err := x.ID(info.ID).Cols("shared_num").Update(info)
+	return err
+}
+
 func UpdateQRCodeUrlInfoStatusFromName(info *QRCodeUrlInfo) error {
-	_, err := x.Cols("status").Update(info, &QRCodeUrlInfo{Name: info.Name})
+	_, err := x.Cols("status", "end_time").Update(info, &QRCodeUrlInfo{Name: info.Name})
 	if err != nil {
 		plog.Errorf("update qrcode url info from name error: %v", err)
 	}
+	return err
+}
+
+func UpdateQRCodeUrlInfoIfModAndGroupNum(info *QRCodeUrlInfo) error {
+	_, err := x.ID(info.ID).Cols("if_mod", "group_num").Update(info)
 	return err
 }
 

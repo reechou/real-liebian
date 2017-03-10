@@ -2,21 +2,22 @@ package controller
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
-	"strconv"
-
 	//"github.com/kyokomi/emoji"
 )
 
 type RobotUserLogic struct {
 	sync.Mutex
-	UserRobotImgMap map[int64][]string
+	UserRobotImgMap   map[int64][]string
+	UserRobotShareMap map[int64]int64
 }
 
 func NewRobotUserLogic() *RobotUserLogic {
 	rul := &RobotUserLogic{
-		UserRobotImgMap: make(map[int64][]string),
+		UserRobotImgMap:   make(map[int64][]string),
+		UserRobotShareMap: make(map[int64]int64),
 	}
 
 	return rul
@@ -46,7 +47,7 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 	//}
 	//fmt.Println(emoji.Sprintf(user))
 	//emojiUser := emoji.Sprintf(user)
-	
+
 	emojiUser := replaceEmoji(user)
 	userList := self.UserRobotImgMap[id]
 	for _, v := range userList {
@@ -54,6 +55,8 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 			return
 		}
 	}
+	sharedNum := self.UserRobotShareMap[id]
+	self.UserRobotShareMap[id] = sharedNum + 1
 	//user = strings.Replace(user, "<span class=\"emoji ", "", -1)
 	//user = strings.Replace(user, "\"></span>", "", -1)
 	self.UserRobotImgMap[id] = append(userList, emojiUser)
@@ -61,10 +64,23 @@ func (self *RobotUserLogic) AddGroupImgUser(id int64, user string) {
 }
 
 func (self *RobotUserLogic) DelGroup(id int64) {
+	sharedNum := self.delGroup(id)
+	info := &QRCodeUrlInfo{
+		ID:        id,
+		SharedNum: sharedNum,
+	}
+	UpdateQRCodeUrlInfoSharedNum(info)
+}
+
+func (self *RobotUserLogic) delGroup(id int64) int64 {
 	self.Lock()
 	defer self.Unlock()
 
 	delete(self.UserRobotImgMap, id)
+	sharedNum := self.UserRobotShareMap[id]
+	delete(self.UserRobotShareMap, id)
+
+	return sharedNum
 }
 
 func (self *RobotUserLogic) ClearGroup(id int64) {
@@ -75,9 +91,9 @@ func (self *RobotUserLogic) ClearGroup(id int64) {
 }
 
 func replaceEmoji(oriStr string) string {
-	
+
 	newStr := oriStr
-	
+
 	if strings.Contains(oriStr, `<span class="emoji`) {
 		reg, _ := regexp.Compile(`<span class="emoji emoji[a-f0-9]{5}"></span>`)
 		newStr = reg.ReplaceAllStringFunc(oriStr, func(arg2 string) string {
@@ -89,6 +105,6 @@ func replaceEmoji(oriStr string) string {
 			return num
 		})
 	}
-	
+
 	return newStr
 }
