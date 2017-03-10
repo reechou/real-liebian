@@ -48,12 +48,12 @@ func (self *WxGroupMonitor) check() {
 	if self.RecordTime >= recordTime {
 		return
 	}
-	plog.Debugf("Every stat time[%d] recordtime[%d] last recordtime[%d].", EVERY_RECORD_TIME, recordTime, self.RecordTime)
 	typeList, err := GetQRCodeUrlRobotAllType()
 	if err != nil {
 		plog.Errorf("get group robot all type error: %v", err)
 		return
 	}
+	plog.Debugf("Every stat time[%d] recordtime[%d] last recordtime[%d] typelist[%v].", EVERY_RECORD_TIME, recordTime, self.RecordTime, typeList)
 	endTime := recordTime + EVERY_RECORD_TIME
 	for _, v := range typeList {
 		if v.Type == 0 {
