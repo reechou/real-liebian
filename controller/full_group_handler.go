@@ -68,6 +68,11 @@ func (self *GroupFullHandler) Stop() {
 }
 
 func (self *GroupFullHandler) AddGroupImgUser(user string) {
+	for _, v := range self.robotList {
+		if v.RobotWx == user {
+			return
+		}
+	}
 	self.rul.AddGroupImgUser(self.qrCodeInfo.ID, "@"+user)
 }
 

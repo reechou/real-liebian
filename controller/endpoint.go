@@ -439,6 +439,15 @@ func (xhs *XHttpServer) handleRobotMsg(qrCodeUrlInfo *QRCodeUrlInfo, msg *Receiv
 	switch msg.BaseInfo.ReceiveEvent {
 	case RECEIVE_EVENT_MSG:
 		if msg.MsgType == MSG_TYPE_IMG {
+			robotList, err := GetQRCodeUrlRobotList(qrCodeUrlInfo.ID)
+			if err == nil {
+				// check if robot
+				for _, v := range robotList {
+					if v.RobotWx == msg.BaseInfo.FromNickName {
+						return
+					}
+				}
+			}
 			xhs.rul.AddGroupImgUser(qrCodeUrlInfo.ID, "@"+msg.BaseInfo.FromNickName)
 		}
 	case RECEIVE_EVENT_MOD_GROUP_ADD:
