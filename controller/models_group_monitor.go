@@ -16,14 +16,14 @@ type RobotGroupMonitor struct {
 func CreateRobotGroupMonitor(info *RobotGroupMonitor) error {
 	now := time.Now().Unix()
 	info.CreatedAt = now
-	
+
 	_, err := x.Insert(info)
 	if err != nil {
 		plog.Errorf("create robot group monitor error: %v", err)
 		return err
 	}
 	plog.Infof("create obot group monitor[%v] success.", info)
-	
+
 	return nil
 }
 

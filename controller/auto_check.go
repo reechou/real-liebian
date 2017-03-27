@@ -141,7 +141,7 @@ func (self *AutoCheckGroup) check() {
 }
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
-	list, err :=                             GetQRCodeUrlRobotList(info.ID)
+	list, err := GetQRCodeUrlRobotList(info.ID)
 	if err != nil {
 		plog.Errorf("get qrcode robot list error: %v", err)
 		return
@@ -201,7 +201,7 @@ func (self *AutoCheckGroup) sendMsgsAddPrefix(prefix string, info *QRCodeUrlInfo
 	if !strings.Contains(prefix, "@") {
 		return
 	}
-	
+
 	listIdx := self.idx % len(list)
 	self.idx++
 	if self.idx == 100 {

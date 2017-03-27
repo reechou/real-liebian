@@ -224,7 +224,7 @@ func (self *GroupFullHandler) sendMsgsAddPrefix(prefix string, msgs []MsgInfo) {
 	if !strings.Contains(prefix, "@") {
 		return
 	}
-	
+
 	listIdx := self.idx % len(self.robotList)
 	self.idx++
 	if self.idx == 100 {
