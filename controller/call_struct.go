@@ -44,9 +44,9 @@ type RefreshRobotMsgSettingReq struct {
 }
 
 type GetGroupMonitorReq struct {
-	Type int64 `json:"type"`
+	Type      int64 `json:"type"`
 	StartTime int64 `json:"startTime"`
-	EndTime int64 `json:"endTime"`
+	EndTime   int64 `json:"endTime"`
 }
 
 const (

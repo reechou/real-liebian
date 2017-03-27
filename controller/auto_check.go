@@ -141,7 +141,7 @@ func (self *AutoCheckGroup) check() {
 }
 
 func (self *AutoCheckGroup) sendMsgs(info *QRCodeUrlInfo) {
-	list, err := GetQRCodeUrlRobotList(info.ID)
+	list, err :=                             GetQRCodeUrlRobotList(info.ID)
 	if err != nil {
 		plog.Errorf("get qrcode robot list error: %v", err)
 		return

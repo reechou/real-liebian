@@ -102,6 +102,18 @@ func GetQRCodeUrlInfo(info *QRCodeUrlInfo) (bool, error) {
 	return true, nil
 }
 
+func GetQRCodeUrlInfoActive(info *QRCodeUrlInfo) (bool, error) {
+	has, err := x.Where("status = 0").And("name = ?", info.Name).Get(info)
+	if err != nil {
+		return false, err
+	}
+	if !has {
+		plog.Debugf("cannot find qrcode url info from info[%v]", info)
+		return false, nil
+	}
+	return true, nil
+}
+
 func GetQRCodeUrlInfoFromRobotUserName(info *QRCodeUrlInfo) (bool, error) {
 	has, err := x.Where("robot_wx = ?", info.RobotWx).And("user_name = ?", info.UserName).Get(info)
 	if err != nil {

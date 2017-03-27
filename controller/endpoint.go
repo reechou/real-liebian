@@ -134,7 +134,7 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 		return response, nil
 	}
 	if len(list) == 0 {
-		plog.Errorf("get qrcode list from type is nil")
+		plog.Errorf("get qrcode list from type[%d] is nil", info.Type)
 		response.Code = RES_ERR
 		response.Msg = fmt.Sprintf("get qrcode list from type is nil")
 		return response, nil
@@ -496,7 +496,7 @@ func (xhs *XHttpServer) getNowActiveGroup(msg *ReceiveMsgInfo) (*QRCodeUrlInfo, 
 	qrcodeUrlInfo := &QRCodeUrlInfo{
 		Name: msg.BaseInfo.FromGroupName,
 	}
-	has, err := GetQRCodeUrlInfo(qrcodeUrlInfo)
+	has, err := GetQRCodeUrlInfoActive(qrcodeUrlInfo)
 	if err != nil {
 		plog.Errorf("get qrcode info error: %v", err)
 		return nil, false, err
