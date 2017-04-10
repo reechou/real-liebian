@@ -145,6 +145,15 @@ func GetQRCodeUrlInfoList(num, t int64) ([]QRCodeUrlInfo, error) {
 	return list, nil
 }
 
+func GetQRCodeUrlInfoListWithoutExpired(num, t int64) ([]QRCodeUrlInfo, error) {
+	var list []QRCodeUrlInfo
+	err := x.Where("type = ?", t).And("status = 0").Limit(int(num)).Find(&list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func GetQRCodeUrlInfoListFromTime(t, startTime, endTime int64) ([]QRCodeUrlInfo, error) {
 	var list []QRCodeUrlInfo
 	err := x.Where("type = ?", t).And("end_time >= ?", startTime).And("end_time <= ?", endTime).Find(&list)

@@ -9,12 +9,13 @@ type MsgInfo struct {
 	Msg     string `json:"msg"`
 }
 type TypeGroupSetting struct {
-	ID        int64  `xorm:"pk autoincr" json:"id"`
-	Type      int64  `xorm:"not null default 0 int unique" json:"type"`
-	GroupNum  int64  `xorm:"not null default 0 int" json:"groupNum"`
-	RobotHost string `xorm:"not null default '' varchar(128)" json:"robotHost"`
-	Desc      string `xorm:"not null default '' varchar(128)" json:"desc"`
-	CreatedAt int64  `xorm:"not null default 0 int" json:"createdAt"`
+	ID           int64  `xorm:"pk autoincr" json:"id"`
+	Type         int64  `xorm:"not null default 0 int unique" json:"type"`
+	GroupNum     int64  `xorm:"not null default 0 int" json:"groupNum"`
+	RobotHost    string `xorm:"not null default '' varchar(128)" json:"robotHost"`
+	Desc         string `xorm:"not null default '' varchar(128)" json:"desc"`
+	IfHasExpired int    `xorm:"not null default 0 int" json:"ifHasExpired"`
+	CreatedAt    int64  `xorm:"not null default 0 int" json:"createdAt"`
 }
 type TypeRobotMsgSetting struct {
 	ID          int64  `xorm:"pk autoincr" json:"id"`
