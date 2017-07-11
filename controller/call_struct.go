@@ -52,6 +52,7 @@ type GetGroupMonitorReq struct {
 const (
 	GET_URL_STATUS_OK = iota
 	GET_URL_STATUS_HAS_EXIST
+	GET_URL_STATUS_EXPIRED
 )
 
 type GetQRCodeUrlRsp struct {
