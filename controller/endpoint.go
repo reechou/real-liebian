@@ -122,7 +122,7 @@ func (xhs *XHttpServer) getQRCodeUrl(rsp http.ResponseWriter, req *http.Request)
 	if has {
 		resResult.Status = GET_URL_STATUS_HAS_EXIST
 		now := time.Now().Unix()
-		if now - userQRCode.CreatedAt > 60 {
+		if now - userQRCode.CreatedAt > 300 {
 			resResult.Status = GET_URL_STATUS_EXPIRED
 		}
 		resResult.Result = &QRCodeUrlInfo{Url: userQRCode.Url}
